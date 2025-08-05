@@ -1,0 +1,134 @@
+// hooks/use-posts.ts
+import { useState, useEffect } from "react";
+import { getPosts } from "@/lib/firebase-services"; // Updated import path
+
+export const usePosts = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const data = await getPosts();
+        setPosts(data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  return { posts, loading, error };
+};
+
+// hooks/use-plans.ts
+import { useState, useEffect } from "react";
+import { getPlans } from "@/lib/firebase-services"; // Updated import path
+
+export const usePlans = () => {
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const data = await getPlans();
+        setPlans(data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
+  return { plans, loading, error };
+};
+
+// hooks/use-stories.ts
+import { useState, useEffect } from "react";
+import { getStories } from "@/lib/firebase-services"; // Updated import path
+
+export const useStories = () => {
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const data = await getStories();
+        setStories(data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStories();
+  }, []);
+
+  return { stories, loading, error };
+};
+
+// hooks/use-notifications.ts
+import { useState, useEffect } from "react";
+import { getNotifications } from "@/lib/firebase-services"; // Updated import path
+
+export const useNotifications = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const data = await getNotifications();
+        setNotifications(data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+  return { notifications, loading, error };
+};
+
+// hooks/use-messages.ts
+import { useState, useEffect } from "react";
+import { getMessages } from "@/lib/firebase-services"; // Updated import path
+
+export const useMessages = () => {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const data = await getMessages();
+        setMessages(data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, []);
+
+  return { messages, loading, error };
+};

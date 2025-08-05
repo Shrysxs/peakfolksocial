@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Disallow private areas
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+Disallow: /settings/
+Disallow: /messages/
+
+# Allow important pages
+Allow: /feed
+Allow: /explore
+Allow: /create
+Allow: /profile/*
+
+# Sitemap
+Sitemap: https://your-domain.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1 
