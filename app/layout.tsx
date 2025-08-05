@@ -69,11 +69,11 @@ export default function RootLayout({
 
               // Handle network errors
               window.addEventListener('online', function() {
-                console.log('Network connection restored');
+                // Network connection restored - could trigger UI update if needed
               });
 
               window.addEventListener('offline', function() {
-                console.log('Network connection lost');
+                // Network connection lost - could trigger UI update if needed
               });
             `,
           }}

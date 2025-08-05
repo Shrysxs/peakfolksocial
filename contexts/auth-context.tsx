@@ -162,7 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setDbUser({ id: userDocSnap.id, ...userDocSnap.data() } as DBUser)
       }
     } catch (error: any) {
-      console.error("Error refreshing user data:", error)
+      // Error refreshing user data - could be logged to external service in production
     }
   }
 
@@ -174,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       )
       setDbUser({ ...dbUser, ...updates })
     } catch (error: any) {
-      console.error("Error updating user data:", error)
+      // Error updating user data - could be logged to external service in production
       throw error
     }
   }

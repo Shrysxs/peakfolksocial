@@ -1,162 +1,162 @@
 # Peakfolk - Social Group Planning Platform
 
-Peakfolk is a modern social platform that makes casual group plans visible, joinable, and social, moving them out of private WhatsApp chats into a public, discoverable space.
+# Peakfolk Social
 
-## 🚀 Features
+A modern social platform built with Next.js 15, TypeScript, and Firebase. Features include user authentication, plan creation and management, personal and plan feeds, direct messaging, group chat, and PWA support.
 
-- **Public Plan Discovery**: Browse and search for plans in your area
-- **One-Click Joining**: Join plans with capacity management
-- **Real-time Chat**: Plan-specific chat rooms for coordination
-- **Social Feed**: Share and discover content from your network
-- **User Profiles**: Rich profiles with following/follower system
-- **Notifications**: Real-time notifications for plan updates
-- **PWA Support**: Install as a mobile app
-- **Responsive Design**: Works seamlessly on all devices
+## Tech Stack
 
-## 🛠️ Tech Stack
-
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Styling**: Tailwind CSS, Radix UI
-- **Backend**: Firebase (Firestore, Auth, Storage)
-- **State Management**: TanStack Query, React Context
-- **Forms**: React Hook Form, Zod validation
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Database**: Firebase Firestore
+- **Authentication**: Firebase Auth
+- **Storage**: Firebase Storage
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI
+- **State Management**: TanStack React Query
+- **Forms**: React Hook Form + Zod validation
+- **Charts**: Recharts
 - **Animations**: Framer Motion
-- **Deployment**: Docker, Nginx
+- **PWA**: Service Worker + Web App Manifest
 
-## 📋 Prerequisites
+## Features
 
-- Node.js 18+ 
-- npm or pnpm
+- User authentication (email/password, Google)
+- Plan creation and management
+- Personal feed with posts and stories
+- Plan-specific feeds and group chat
+- Direct messaging between users
+- Real-time notifications
+- PWA support with offline capabilities
+- Dark/light theme switching
+- Advanced search functionality
+- Analytics dashboard
+- Image upload and storage
+
+## Project Structure
+
+```
+app/
+├── (app)/              # Main application routes
+│   ├── feed/           # Personal feed
+│   ├── messages/       # Direct messaging
+│   ├── plan/           # Plan management
+│   ├── profile/        # User profiles
+│   └── search/         # Search
+├── (auth)/             # Authentication routes
+├── api/                # API routes
+├── globals.css         # Global styles
+├── layout.tsx          # Root layout
+└── page.tsx            # Home page
+
+components/
+├── ui/                 # Base UI components
+├── advanced-search.tsx
+├── create-plan-form.tsx
+├── header.tsx
+├── navigation.tsx
+├── plan-card.tsx
+├── post-card.tsx
+└── ...
+
+contexts/
+└── auth-context.tsx    # Authentication context
+
+hooks/                  # Custom React hooks
+├── use-auth.ts
+├── use-posts.ts
+├── use-plans.ts
+└── ...
+
+lib/
+├── firebase.ts         # Firebase config
+├── firebase-services.ts # Firebase utilities
+└── utils.ts
+
+providers/
+└── query-provider.tsx  # React Query setup
+
+types/
+└── index.ts            # TypeScript definitions
+```
+
+## Local Setup
+
+### Prerequisites
+
+- Node.js 18.0.0+
+- npm 8.0.0+
 - Firebase project
-- Domain name (for production)
 
-## 🚀 Quick Start
+### Installation
 
-### Development
-
-1. **Clone the repository**
+1. Clone and install:
    ```bash
    git clone <repository-url>
-   cd peakfolk
-   ```
-
-2. **Install dependencies**
-   ```bash
+   cd peakfolk.social
    npm install
    ```
 
-3. **Set up environment variables**
+2. Environment setup:
    ```bash
-   cp env.example .env.local
+   cp .env.example .env.local
    ```
-   Fill in your Firebase configuration in `.env.local`
+   
+   Configure Firebase variables in `.env.local`:
+   ```env
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+   
+   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_SECRET=your_secret_key
+   ```
 
-4. **Start development server**
+3. Firebase setup:
+   - Create Firebase project
+   - Enable Authentication (Email/Password, Google)
+   - Create Firestore database
+   - Enable Storage
+   - Copy config to `.env.local`
+
+4. Run development server:
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**
-   Navigate to `http://localhost:3000`
+### Available Scripts
 
-### Production Deployment
+- `npm run dev` - Development server
+- `npm run build` - Production build
+- `npm run start` - Production server
+- `npm run lint` - ESLint
+- `npm run type-check` - TypeScript checking
 
-#### Option 1: Automated Deployment
+## Deployment to Vercel
 
-1. **Run the deployment script**
-   ```bash
-   ./deploy.sh
-   ```
+1. Connect GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main
 
-2. **Follow the generated instructions**
+### Required Environment Variables
 
-#### Option 2: Manual Deployment
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
+- `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`
+- `NEXTAUTH_URL`
+- `NEXTAUTH_SECRET`
 
-1. **Build the application**
-   ```bash
-   npm run build
-   ```
+## Contributing
 
-2. **Start production server**
-   ```bash
-   npm start
-   ```
-
-#### Option 3: Docker Deployment
-
-1. **Build Docker image**
-   ```bash
-   docker build -t peakfolk:latest .
-   ```
-
-2. **Run container**
-   ```bash
-   docker run -p 3000:3000 peakfolk:latest
-   ```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Create a `.env.local` file with the following variables:
-
-```env
-# Firebase Configuration
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
-
-# Next.js Configuration
-NEXTAUTH_URL=https://your-domain.com
-NEXTAUTH_SECRET=your_nextauth_secret
-
-# Feature Flags
-NEXT_PUBLIC_ENABLE_PWA=true
-NEXT_PUBLIC_ENABLE_ANALYTICS=true
-NEXT_PUBLIC_ENABLE_PUSH_NOTIFICATIONS=true
-```
-
-### Firebase Setup
-
-1. **Create a Firebase project**
-   - Go to [Firebase Console](https://console.firebase.google.com/)
-   - Create a new project
-   - Enable Authentication, Firestore, and Storage
-
-2. **Configure Authentication**
-   - Enable Email/Password authentication
-   - Enable Google authentication
-   - Configure authorized domains
-
-3. **Set up Firestore**
-   - Create a Firestore database
-   - Configure security rules (see `firestore.rules`)
-   - Set up indexes (see `firestore.indexes.json`)
-
-4. **Configure Storage**
-   - Create a Storage bucket
-   - Set up security rules for file uploads
-
-## 📱 PWA Configuration
-
-The app is configured as a Progressive Web App with:
-
-- Service worker for offline functionality
-- App manifest for installation
-- Push notification support
-- Offline indicator
-
-## 🔒 Security
-
-- Firebase Security Rules for data access control
-- Input validation with Zod
-- XSS protection headers
-- CSRF protection
-- Secure authentication flow
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ## 📊 Performance
 
