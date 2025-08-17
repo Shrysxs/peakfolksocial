@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getAdminAuth, getAdminDb, FieldValue } from "@/lib/firebase-admin"
 import type { Transaction, DocumentData } from "firebase-admin/firestore"
 
+export const runtime = "nodejs"
+
 export async function POST(req: NextRequest, { params }: { params: { planId: string } }) {
   try {
     const adminAuth = getAdminAuth()

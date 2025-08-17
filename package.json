@@ -10,7 +10,6 @@
     "type-check": "tsc --noEmit",
     "clean": "rm -rf .next out",
     "analyze": "ANALYZE=true npm run build",
-    "preinstall": "npx npm-force-resolutions",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch"
   },
