@@ -1,7 +1,8 @@
 // Centralized environment variable access and validation
 // - Public variables must be prefixed with NEXT_PUBLIC_ (available to client)
 // - Server-only secrets must NOT be prefixed (available only on server)
-// This module throws early if required values are missing.
+// NOTE: Avoid throwing during server/import time for public vars to prevent
+//       Vercel prerender builds from failing when client-only envs are not injected.
 
 type RequiredPublicVar =
   | "NEXT_PUBLIC_FIREBASE_API_KEY"
@@ -26,15 +27,22 @@ function requireEnv(name: RequiredPublicVar): string {
   return v
 }
 
-// Firebase Public Config (safe to expose to browsers; still keep out of git)
-export const FIREBASE_PUBLIC = {
-  apiKey: requireEnv("NEXT_PUBLIC_FIREBASE_API_KEY"),
-  authDomain: requireEnv("NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"),
-  projectId: requireEnv("NEXT_PUBLIC_FIREBASE_PROJECT_ID"),
-  storageBucket: requireEnv("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"),
-  messagingSenderId: requireEnv("NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"),
-  appId: requireEnv("NEXT_PUBLIC_FIREBASE_APP_ID"),
-  measurementId: getEnv("NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID"), // optional
+// Firebase Public Config accessor (safe to expose to browsers; still keep out of git)
+// By default (strict=false) it will NOT throw, so that server/import time doesn't fail.
+// Call with strict=true in browser when actually initializing Firebase.
+export function getFirebasePublic(strict = false) {
+  const read = (name: RequiredPublicVar) =>
+    strict ? requireEnv(name) : (getEnv(name) || "")
+
+  return {
+    apiKey: read("NEXT_PUBLIC_FIREBASE_API_KEY"),
+    authDomain: read("NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"),
+    projectId: read("NEXT_PUBLIC_FIREBASE_PROJECT_ID"),
+    storageBucket: read("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"),
+    messagingSenderId: read("NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"),
+    appId: read("NEXT_PUBLIC_FIREBASE_APP_ID"),
+    measurementId: getEnv("NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID"), // optional
+  }
 }
 
 // NextAuth (server-only)

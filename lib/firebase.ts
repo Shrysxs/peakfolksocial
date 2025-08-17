@@ -3,21 +3,11 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth"
 import { getFirestore, serverTimestamp } from "firebase/firestore"
 import { getStorage } from "firebase/storage"
 import { getAnalytics } from "firebase/analytics"
-import { FIREBASE_PUBLIC } from "@/lib/env"
+import { getFirebasePublic } from "@/lib/env"
 
-/**
- * Firebase configuration pulled from NEXT_PUBLIC_*
- * env vars (must be set in the Vercel dashboard).
- */
-const firebaseConfig = {
-  apiKey: FIREBASE_PUBLIC.apiKey,
-  authDomain: FIREBASE_PUBLIC.authDomain,
-  projectId: FIREBASE_PUBLIC.projectId,
-  storageBucket: FIREBASE_PUBLIC.storageBucket,
-  messagingSenderId: FIREBASE_PUBLIC.messagingSenderId,
-  appId: FIREBASE_PUBLIC.appId,
-  measurementId: FIREBASE_PUBLIC.measurementId,
-}
+// Build a non-strict config at module load to avoid throwing on the server.
+// Strict validation happens only when actually initializing in the browser.
+const firebaseConfig = getFirebasePublic(false)
 
 /* -------------------------------------------------------------------------- */
 /*   Validate config early so deployments fail fast if something is missing   */
@@ -25,16 +15,18 @@ const firebaseConfig = {
 // Validation is handled centrally in lib/env.ts
 
 /* ---------------------------- Initialize SDKs ---------------------------- */
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
-const auth = getAuth(app)
-const db = getFirestore(app)
-const storage = getStorage(app)
+const isBrowser = typeof window !== "undefined"
+// Only initialize in the browser with strict env validation.
+const app = isBrowser ? (getApps().length ? getApp() : initializeApp(getFirebasePublic(true))) : (undefined as unknown as ReturnType<typeof initializeApp>)
+const auth = isBrowser ? getAuth(app) : (undefined as unknown as ReturnType<typeof getAuth>)
+const db = isBrowser ? getFirestore(app) : (undefined as unknown as ReturnType<typeof getFirestore>)
+const storage = isBrowser ? getStorage(app) : (undefined as unknown as ReturnType<typeof getStorage>)
 
 /**
  * Initialize Analytics **only** in the browser.
  * The Analytics SDK throws when invoked on the server.
  */
-const analytics = typeof window !== "undefined" ? getAnalytics(app) : undefined
+const analytics = isBrowser ? getAnalytics(app) : undefined
 
 /* ------------------------- Google Auth Provider -------------------------- */
 const googleProvider = new GoogleAuthProvider()
