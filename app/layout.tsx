@@ -9,12 +9,12 @@ import QueryProvider from "@/providers/query-provider"
 import { OfflineIndicator } from "@/components/offline-indicator"
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt"
 import { ErrorBoundary } from "@/components/error-boundary"
+import { defaultSEO } from "@/config/seo"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Peakfolk - Connect, Plan, Explore",
-  description: "A social platform for adventure enthusiasts to connect, plan trips, and share experiences.",
+  ...defaultSEO,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

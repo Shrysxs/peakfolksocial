@@ -91,7 +91,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Email/Password Login */}
-          <form onSubmit={handleEmailLogin} className="space-y-4">
+          <form onSubmit={handleEmailLogin} className="space-y-4" aria-busy={loading} aria-live="polite">
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-white">
                 Email
@@ -104,6 +104,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
+                disabled={loading}
               />
             </div>
             <div className="grid gap-2">
@@ -117,9 +118,10 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
+                disabled={loading}
               />
             </div>
-            <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled={loading}>
+            <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled={loading} aria-busy={loading}>
               {loading ? <LoadingSpinner className="text-white" /> : "Login"}
             </Button>
           </form>
@@ -140,6 +142,7 @@ export default function LoginPage() {
               className="w-full border-orange-500 text-orange-500 hover:bg-orange-900 hover:text-white bg-transparent"
               onClick={handleGoogleLogin}
               disabled={loading}
+              aria-busy={loading}
             >
               {loading ? <LoadingSpinner className="text-orange-500" /> : "Login with Google"}
             </Button>
@@ -148,7 +151,7 @@ export default function LoginPage() {
           {/* Phone Login */}
           <div className="space-y-3">
             {!showOtpInput ? (
-              <form onSubmit={handlePhoneSignIn} className="space-y-3">
+              <form onSubmit={handlePhoneSignIn} className="space-y-3" aria-busy={loading}>
                 <div className="grid gap-2">
                   <Label htmlFor="phone" className="text-white">
                     Phone Number
@@ -161,19 +164,21 @@ export default function LoginPage() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
+                    disabled={loading}
                   />
                 </div>
                 <Button
                   type="submit"
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                   disabled={loading}
+                  aria-busy={loading}
                 >
                   {loading ? <LoadingSpinner className="text-white" /> : "Send OTP"}
                 </Button>
                 <div id="recaptcha-container"></div> {/* reCAPTCHA container */}
               </form>
             ) : (
-              <form onSubmit={handleOtpConfirm} className="space-y-3">
+              <form onSubmit={handleOtpConfirm} className="space-y-3" aria-busy={loading}>
                 <div className="grid gap-2">
                   <Label htmlFor="otp" className="text-white">
                     OTP
@@ -186,12 +191,14 @@ export default function LoginPage() {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
+                    disabled={loading}
                   />
                 </div>
                 <Button
                   type="submit"
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                   disabled={loading}
+                  aria-busy={loading}
                 >
                   {loading ? <LoadingSpinner className="text-white" /> : "Verify OTP"}
                 </Button>
@@ -211,6 +218,7 @@ export default function LoginPage() {
               onClick={handleForgotPassword}
               className="text-orange-500 hover:underline p-0 h-auto"
               disabled={isSendingResetEmail}
+              aria-busy={isSendingResetEmail}
             >
               {isSendingResetEmail ? <LoadingSpinner className="text-orange-500" size="sm" /> : "Forgot password?"}
             </Button>

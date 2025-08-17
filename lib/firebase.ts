@@ -3,39 +3,26 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth"
 import { getFirestore, serverTimestamp } from "firebase/firestore"
 import { getStorage } from "firebase/storage"
 import { getAnalytics } from "firebase/analytics"
+import { FIREBASE_PUBLIC } from "@/lib/env"
 
 /**
  * Firebase configuration pulled from NEXT_PUBLIC_*
  * env vars (must be set in the Vercel dashboard).
  */
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-};
+  apiKey: FIREBASE_PUBLIC.apiKey,
+  authDomain: FIREBASE_PUBLIC.authDomain,
+  projectId: FIREBASE_PUBLIC.projectId,
+  storageBucket: FIREBASE_PUBLIC.storageBucket,
+  messagingSenderId: FIREBASE_PUBLIC.messagingSenderId,
+  appId: FIREBASE_PUBLIC.appId,
+  measurementId: FIREBASE_PUBLIC.measurementId,
+}
 
 /* -------------------------------------------------------------------------- */
 /*   Validate config early so deployments fail fast if something is missing   */
 /* -------------------------------------------------------------------------- */
-for (const [key, value] of Object.entries({
-  NEXT_PUBLIC_FIREBASE_API_KEY: firebaseConfig.apiKey,
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: firebaseConfig.authDomain,
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID: firebaseConfig.projectId,
-  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: firebaseConfig.storageBucket,
-  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: firebaseConfig.messagingSenderId,
-  NEXT_PUBLIC_FIREBASE_APP_ID: firebaseConfig.appId,
-})) {
-  if (!value) {
-    throw new Error(
-      `Firebase config error: Environment variable "${key}" is missing.\n` +
-        "Set it in the Vercel dashboard → Environment Variables and redeploy.",
-    )
-  }
-}
+// Validation is handled centrally in lib/env.ts
 
 /* ---------------------------- Initialize SDKs ---------------------------- */
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig)

@@ -57,6 +57,8 @@ export function UserCard({ user }: UserCardProps) {
         <Button
           onClick={handleFollowToggle}
           disabled={isTogglingFollow}
+          aria-busy={isTogglingFollow}
+          aria-live="polite"
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
             isFollowing ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-orange-600 text-white hover:bg-orange-700"
           }`}
@@ -68,6 +70,9 @@ export function UserCard({ user }: UserCardProps) {
           ) : (
             "Follow"
           )}
+          <span className="sr-only">
+            {isTogglingFollow ? "Updating follow status" : isFollowing ? "You are following" : "Click to follow"}
+          </span>
         </Button>
       )}
     </div>

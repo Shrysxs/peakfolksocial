@@ -16,13 +16,13 @@ Thank you for your interest in contributing to Peakfolk Social. This document pr
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/peakfolk.social.git
-   cd peakfolk.social
+   git clone https://github.com/YOUR_USERNAME/peakfolksocial.git
+   cd peakfolksocial
    ```
 
 3. Add the original repository as upstream:
    ```bash
-   git remote add upstream https://github.com/ORIGINAL_OWNER/peakfolk.social.git
+   git remote add upstream https://github.com/ORIGINAL_OWNER/peakfolksocial.git
    ```
 
 4. Install dependencies:
@@ -35,7 +35,7 @@ Thank you for your interest in contributing to Peakfolk Social. This document pr
    cp .env.example .env.local
    ```
 
-6. Configure your Firebase project in `.env.local`
+6. Configure your Firebase project in `.env.local` (see comments in `.env.example`).
 
 7. Start the development server:
    ```bash
@@ -74,6 +74,7 @@ Examples:
    ```bash
    npm run type-check
    npm run lint
+   npm test
    npm run build
    ```
 
@@ -113,7 +114,7 @@ Examples:
 
 - Use functional components with hooks
 - Follow React best practices
-- Use Next.js App Router conventions
+- Use Next.js App Router conventions (`app/` directory)
 - Implement proper error boundaries
 
 ### Styling
@@ -129,15 +130,25 @@ Examples:
 - Use descriptive file and function names
 - Keep components focused and reusable
 - Separate business logic into custom hooks
+- Use the `@/*` path alias for shared modules (see `tsconfig.json`)
+- Centralize constants/config in `config/` (`site.ts`, `seo.ts`, `feature-flags.ts`, `routes.ts`)
 
 ## Testing
 
-Currently, the project uses manual testing. When adding new features:
+This project uses Jest + React Testing Library.
 
-1. Test functionality manually in development
-2. Test responsive design on different screen sizes
-3. Verify Firebase integration works correctly
-4. Test PWA functionality if applicable
+```bash
+# unit/integration tests
+npm test
+
+# watch mode
+npm run test:watch
+```
+
+When adding new features:
+- Prefer testing hooks and components via RTL
+- Mock Firebase SDKs via `__mocks__/` and use moduleNameMapper (`@/*`)
+- Use `__tests__/utils/test-utils.tsx` providers for React Query
 
 ## Linting and Formatting
 
@@ -170,7 +181,7 @@ Fix any linting errors before submitting your PR.
    - Link to any related issues
 
 3. Ensure your PR:
-   - Passes all checks (linting, type-checking, build)
+   - Passes all checks (linting, type-checking, build, tests)
    - Includes appropriate documentation updates
    - Follows the coding standards
    - Has a clear commit history
@@ -189,6 +200,7 @@ Brief description of changes made.
 - [ ] Other (please describe)
 
 ## Testing
+- [ ] Added/updated unit tests
 - [ ] Tested locally
 - [ ] Responsive design verified
 - [ ] Firebase integration tested
@@ -224,6 +236,7 @@ When adding new features, follow these guidelines:
 - **Utils**: Utility functions in `/lib` directory
 - **Types**: TypeScript definitions in `/types` directory
 - **Contexts**: React contexts in `/contexts` directory
+- **Config**: Site/SEO/flags/routes in `/config` directory
 
 ## Firebase Guidelines
 

@@ -91,7 +91,8 @@ export function CreatePlanForm({ onPlanCreated }: CreatePlanFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" aria-busy={isCreatingPlan} aria-live="polite">
+      <fieldset disabled={isCreatingPlan} className="contents">
       <div className="grid gap-2">
         <Label htmlFor="title" className="text-white">
           Plan Title
@@ -252,7 +253,8 @@ export function CreatePlanForm({ onPlanCreated }: CreatePlanFormProps) {
           </div>
         )}
       </div>
-      <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled={isCreatingPlan}>
+      </fieldset>
+      <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled={isCreatingPlan} aria-busy={isCreatingPlan}>
         {isCreatingPlan ? <LoadingSpinner className="text-white" /> : "Create Plan"}
       </Button>
     </form>

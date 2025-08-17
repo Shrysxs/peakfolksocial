@@ -1,249 +1,101 @@
-# Peakfolk - Social Group Planning Platform
+<img src="public/placeholder-logo.png" alt="Peakfolk" width="96"/>
 
 # Peakfolk Social
 
-A modern social platform built with Next.js 15, TypeScript, and Firebase. Features include user authentication, plan creation and management, personal and plan feeds, direct messaging, group chat, and PWA support.
+A modern social platform built with Next.js 15 (App Router), TypeScript, and Firebase. Plan trips with friends, share posts, chat, and use it offline with PWA.
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
-- **Database**: Firebase Firestore
-- **Authentication**: Firebase Auth
-- **Storage**: Firebase Storage
-- **Styling**: Tailwind CSS
-- **UI Components**: Radix UI
-- **State Management**: TanStack React Query
-- **Forms**: React Hook Form + Zod validation
-- **Charts**: Recharts
-- **Animations**: Framer Motion
-- **PWA**: Service Worker + Web App Manifest
+- **Next.js 15 App Router** with `app/`
+- **TypeScript** with strict config and `@/*` path alias
+- **Firebase**: Auth, Firestore, Storage, Admin (API routes)
+- **UI**: Tailwind CSS, Radix UI
+- **State/Data**: TanStack React Query
+- **Forms**: React Hook Form + Zod
+- **PWA**: Web App Manifest + runtime checks
 
-## Features
-
-- User authentication (email/password, Google)
-- Plan creation and management
-- Personal feed with posts and stories
-- Plan-specific feeds and group chat
-- Direct messaging between users
-- Real-time notifications
-- PWA support with offline capabilities
-- Dark/light theme switching
-- Advanced search functionality
-- Analytics dashboard
-- Image upload and storage
-
-## Project Structure
+## Structure (high-level)
 
 ```
 app/
-├── (app)/              # Main application routes
-│   ├── feed/           # Personal feed
-│   ├── messages/       # Direct messaging
-│   ├── plan/           # Plan management
-│   ├── profile/        # User profiles
-│   └── search/         # Search
-├── (auth)/             # Authentication routes
-├── api/                # API routes
-├── globals.css         # Global styles
-├── layout.tsx          # Root layout
-└── page.tsx            # Home page
-
-components/
-├── ui/                 # Base UI components
-├── advanced-search.tsx
-├── create-plan-form.tsx
-├── header.tsx
-├── navigation.tsx
-├── plan-card.tsx
-├── post-card.tsx
-└── ...
-
-contexts/
-└── auth-context.tsx    # Authentication context
-
-hooks/                  # Custom React hooks
-├── use-auth.ts
-├── use-posts.ts
-├── use-plans.ts
-└── ...
-
-lib/
-├── firebase.ts         # Firebase config
-├── firebase-services.ts # Firebase utilities
-└── utils.ts
-
-providers/
-└── query-provider.tsx  # React Query setup
-
-types/
-└── index.ts            # TypeScript definitions
+  (app)/           # main routes and layout
+  (auth)/          # auth routes
+  api/             # Next.js Route Handlers (server)
+components/        # UI + feature components
+config/            # site/seo/feature-flags/routes
+contexts/          # React contexts (e.g., auth)
+hooks/             # data + mutations
+lib/               # firebase, env, admin, utils
+providers/         # providers (React Query, theme)
+types/             # shared types
 ```
 
 ## Local Setup
 
-### Prerequisites
+1) Prereqs
+- Node 18+ and npm 8+
+- A Firebase project (Auth+Firestore+Storage; Analytics optional)
 
-- Node.js 18.0.0+
-- npm 8.0.0+
-- Firebase project
+2) Install
+```bash
+npm install
+```
 
-### Installation
+3) Configure env
+```bash
+cp .env.example .env.local
+```
+Fill in `.env.local` values (see `.env.example`). Required public Firebase vars are validated in `@/lib/env`.
 
-1. Clone and install:
-   ```bash
-   git clone <repository-url>
-   cd peakfolk.social
-   npm install
-   ```
+4) Firebase console
+- Enable Email/Password and Google sign-in
+- Create Firestore DB (production or test mode)
+- Enable Storage
 
-2. Environment setup:
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Configure Firebase variables in `.env.local`:
-   ```env
-   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
-   
-   NEXTAUTH_URL=http://localhost:3000
-   NEXTAUTH_SECRET=your_secret_key
-   ```
+5) Dev server
+```bash
+npm run dev
+```
 
-3. Firebase setup:
-   - Create Firebase project
-   - Enable Authentication (Email/Password, Google)
-   - Create Firestore database
-   - Enable Storage
-   - Copy config to `.env.local`
+## Testing
 
-4. Run development server:
-   ```bash
-   npm run dev
-   ```
+Jest + React Testing Library are configured.
+```bash
+npm test           # run once
+npm run test:watch # watch mode
+```
 
-### Available Scripts
+## Useful scripts
 
-- `npm run dev` - Development server
-- `npm run build` - Production build
-- `npm run start` - Production server
-- `npm run lint` - ESLint
-- `npm run type-check` - TypeScript checking
+- `npm run dev` – start dev server
+- `npm run build` – Next.js production build
+- `npm start` – run production server
+- `npm run lint` – ESLint
+- `npm run type-check` – TypeScript
 
-## Deployment to Vercel
+## Deploy to Vercel
 
-1. Connect GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main
+1) Import the repo into Vercel.
+2) Set Environment Variables in Vercel Project Settings → Environment Variables.
+   - Public (browser-exposed) values must keep the `NEXT_PUBLIC_` prefix.
+   - Server-only (no prefix) for Firebase Admin credentials.
+3) Deploy from the dashboard or on every push to `main`.
 
-### Required Environment Variables
-
-- `NEXT_PUBLIC_FIREBASE_API_KEY`
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-- `NEXT_PUBLIC_FIREBASE_APP_ID`
-- `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`
-- `NEXTAUTH_URL`
-- `NEXTAUTH_SECRET`
+Required (examples) – see `.env.example`:
+- `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`, `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID` (and optional `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`)
+- `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY` (server-only)
+- `NEXTAUTH_URL`, `NEXTAUTH_SECRET` (if using NextAuth)
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## 📊 Performance
+## Notes
 
-- Next.js Image optimization
-- Code splitting and lazy loading
-- Bundle optimization
-- CDN-ready static assets
-- Gzip compression
-
-## 🧪 Testing
-
-```bash
-# Type checking
-npm run type-check
-
-# Linting
-npm run lint
-
-# Build verification
-npm run build
-```
-
-## 📈 Monitoring
-
-- Firebase Analytics integration
-- Error tracking (configurable)
-- Performance monitoring
-- User behavior analytics
-
-## 🔄 CI/CD
-
-The project includes:
-
-- Automated deployment scripts
-- Docker containerization
-- Nginx configuration
-- Health check endpoints
-
-## 📚 API Documentation
-
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-
-### Plans
-- `GET /api/plans` - Get plans
-- `POST /api/plans` - Create plan
-- `PUT /api/plans/:id` - Update plan
-- `DELETE /api/plans/:id` - Delete plan
-
-### Posts
-- `GET /api/posts` - Get posts
-- `POST /api/posts` - Create post
-- `DELETE /api/posts/:id` - Delete post
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions:
-
-- Create an issue in the repository
-- Check the Firebase documentation
-- Review the Next.js documentation
-
-## 🗺️ Roadmap
-
-- [ ] Advanced search and filtering
-- [ ] Plan templates
-- [ ] Recurring plans
-- [ ] Location-based recommendations
-- [ ] Social proof and ratings
-- [ ] Advanced analytics
-- [ ] Mobile app (React Native)
-- [ ] API for third-party integrations
+- Path aliases: import shared modules with `@/` (e.g., `@/lib/firebase-services`).
+- Config is centralized in `config/` (`site.ts`, `seo.ts`, `feature-flags.ts`, `routes.ts`).
+- Env validation and feature flags live in `@/lib/env`.
 
 ---
 
-Built with ❤️ using Next.js and Firebase # peakfolk.social
+Built with ❤️ using Next.js + Firebase.

@@ -155,6 +155,8 @@ export function PlanCard({ plan }: PlanCardProps) {
           <Button
             onClick={handleJoinToggle}
             disabled={isJoining || isLeaving || (isFull && !isJoinedByCurrentUser) || !dbUser}
+            aria-busy={isJoining || isLeaving}
+            aria-live="polite"
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               isJoinedByCurrentUser
                 ? "bg-gray-700 text-white hover:bg-gray-600"
@@ -170,6 +172,9 @@ export function PlanCard({ plan }: PlanCardProps) {
             ) : (
               "Join Plan"
             )}
+            <span className="sr-only">
+              {isJoining ? "Joining plan" : isLeaving ? "Leaving plan" : isJoinedByCurrentUser ? "You have joined this plan" : "Click to join plan"}
+            </span>
           </Button>
         )}
       </CardFooter>

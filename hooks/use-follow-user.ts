@@ -50,26 +50,28 @@ export default function useFollowUser(currentUserId: string | undefined, targetU
         newIsFollowing ? (old || 0) + 1 : Math.max(0, (old || 0) - 1),
       )
 
-      // Optimistically update user profiles (followers/following counts)
+      // Optimistically update user profiles (followers/following counts) with no duplicates
       queryClient.setQueryData(["user", followerId], (oldUser: User | undefined) => {
         if (!oldUser) return oldUser
+        const nextFollowingIds = newIsFollowing
+          ? Array.from(new Set([...(oldUser.followingIds || []), followingId]))
+          : (oldUser.followingIds || []).filter((id) => id !== followingId)
         return {
           ...oldUser,
           following: newIsFollowing ? (oldUser.following || 0) + 1 : Math.max(0, (oldUser.following || 0) - 1),
-          followingIds: newIsFollowing
-            ? [...(oldUser.followingIds || []), followingId]
-            : (oldUser.followingIds || []).filter((id) => id !== followingId),
+          followingIds: nextFollowingIds,
         }
       })
 
       queryClient.setQueryData(["user", followingId], (oldUser: User | undefined) => {
         if (!oldUser) return oldUser
+        const nextFollowerIds = newIsFollowing
+          ? Array.from(new Set([...(oldUser.followerIds || []), followerId]))
+          : (oldUser.followerIds || []).filter((id) => id !== followerId)
         return {
           ...oldUser,
           followers: newIsFollowing ? (oldUser.followers || 0) + 1 : Math.max(0, (oldUser.followers || 0) - 1),
-          followerIds: newIsFollowing
-            ? [...(oldUser.followerIds || []), followerId]
-            : (oldUser.followerIds || []).filter((id) => id !== followerId),
+          followerIds: nextFollowerIds,
         }
       })
 
@@ -95,6 +97,11 @@ export default function useFollowUser(currentUserId: string | undefined, targetU
       if (context?.previousFollowingUser) {
         queryClient.setQueryData(["user", followingId], context.previousFollowingUser)
       }
+    },
+    onSuccess: (data, { followerId, followingId }) => {
+      // Reconcile optimistic cache with server truth
+      const finalIsFollowing = !!data?.following
+      queryClient.setQueryData(["followStatus", followerId, followingId], finalIsFollowing)
     },
     onSettled: (_, __, { followerId, followingId }) => {
       // Always refetch to ensure consistency

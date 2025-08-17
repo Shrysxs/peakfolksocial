@@ -90,7 +90,7 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Email/Password Register */}
-          <form onSubmit={handleEmailRegister} className="space-y-4">
+          <form onSubmit={handleEmailRegister} className="space-y-4" aria-busy={loading} aria-live="polite">
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-white">
                 Email
@@ -103,6 +103,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
+                disabled={loading}
               />
             </div>
             <div className="grid gap-2">
@@ -117,6 +118,7 @@ export default function RegisterPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
+                disabled={loading}
               />
             </div>
             <div className="grid gap-2">
@@ -130,6 +132,7 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
+                disabled={loading}
               />
             </div>
             <div className="grid gap-2">
@@ -143,9 +146,10 @@ export default function RegisterPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
+                disabled={loading}
               />
             </div>
-            <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled={loading}>
+            <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled={loading} aria-busy={loading}>
               {loading ? <LoadingSpinner className="text-white" /> : "Register"}
             </Button>
           </form>
@@ -166,6 +170,7 @@ export default function RegisterPage() {
               className="w-full border-orange-500 text-orange-500 hover:bg-orange-900 hover:text-white bg-transparent"
               onClick={handleGoogleRegister}
               disabled={loading}
+              aria-busy={loading}
             >
               {loading ? <LoadingSpinner className="text-orange-500" /> : "Register with Google"}
             </Button>
@@ -174,7 +179,7 @@ export default function RegisterPage() {
           {/* Phone Register */}
           <div className="space-y-3">
             {!showOtpInput ? (
-              <form onSubmit={handlePhoneSignIn} className="space-y-3">
+              <form onSubmit={handlePhoneSignIn} className="space-y-3" aria-busy={loading}>
                 <div className="grid gap-2">
                   <Label htmlFor="phone-register" className="text-white">
                     Phone Number
@@ -187,19 +192,21 @@ export default function RegisterPage() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
+                    disabled={loading}
                   />
                 </div>
                 <Button
                   type="submit"
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                   disabled={loading}
+                  aria-busy={loading}
                 >
                   {loading ? <LoadingSpinner className="text-white" /> : "Send OTP"}
                 </Button>
                 <div id="recaptcha-container"></div> {/* reCAPTCHA container */}
               </form>
             ) : (
-              <form onSubmit={handleOtpConfirm} className="space-y-3">
+              <form onSubmit={handleOtpConfirm} className="space-y-3" aria-busy={loading}>
                 <div className="grid gap-2">
                   <Label htmlFor="otp-register" className="text-white">
                     OTP
@@ -212,12 +219,14 @@ export default function RegisterPage() {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
+                    disabled={loading}
                   />
                 </div>
                 <Button
                   type="submit"
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                   disabled={loading}
+                  aria-busy={loading}
                 >
                   {loading ? <LoadingSpinner className="text-white" /> : "Verify OTP"}
                 </Button>

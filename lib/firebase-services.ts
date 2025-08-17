@@ -1,4 +1,4 @@
-import { db, auth, storage, googleProvider, analytics } from "./firebase"
+import { db, auth, storage, googleProvider, analytics } from "@/lib/firebase"
 import {
   collection,
   doc,
@@ -32,7 +32,7 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
 import { logEvent } from "firebase/analytics"
 import type { User as UserProfile, Post, Plan, Notification, Message, Story, Comment, EmbeddedUser, PlanMessage } from "@/types"
-import { handleError, handleFirestoreError, handleAuthError, handleStorageError } from "./error-handler"
+import { handleError, handleFirestoreError, handleAuthError, handleStorageError } from "@/lib/error-handler"
 
 // Extend Window interface for recaptcha
 declare global {
@@ -41,7 +41,7 @@ declare global {
   }
 }
 
-// Declare getUser function
+// Declare getUser function (used as a fallback when embedded data is missing)
 const getUser = async (userId: string): Promise<UserProfile | null> => {
   const userRef = doc(db, "users", userId)
   const userSnap = await getDoc(userRef)
@@ -109,23 +109,26 @@ const mapUserDoc = (id: string, data: any): UserProfile => {
 }
 
 const mapPostDoc = async (id: string, data: any): Promise<Post> => {
-  const authorProfile = await getUser(data.userId) // Fetch full author profile
-  const author: EmbeddedUser = {
-    id: authorProfile?.id || data.userId,
-    username: authorProfile?.username || "unknown",
-    avatar: authorProfile?.photoURL || "/placeholder.svg",
-    name: authorProfile?.displayName || authorProfile?.username || "Unknown User",
+  // Prefer embedded author to avoid redundant queries; fallback to fetching when absent
+  let author: EmbeddedUser | undefined = data.author
+  if (!author) {
+    const authorProfile = await getUser(data.userId)
+    author = {
+      id: authorProfile?.id || data.userId,
+      username: authorProfile?.username || "unknown",
+      avatar: authorProfile?.photoURL || "/placeholder.svg",
+      name: authorProfile?.displayName || authorProfile?.username || "Unknown User",
+    }
   }
 
-  // Map embedded comments and fetch their authors
+  // Map embedded comments; avoid fetching authors if embedded
   const comments = await Promise.all(
     normalizeArray(data.comments).map(async (comment: any) => {
-      const commentAuthorProfile = await getUser(comment.userId)
-      const commentAuthor: EmbeddedUser = {
-        id: commentAuthorProfile?.id || comment.userId,
-        username: commentAuthorProfile?.username || "unknown",
-        avatar: commentAuthorProfile?.photoURL || "/placeholder.svg",
-        name: commentAuthorProfile?.displayName || commentAuthorProfile?.username || "Unknown User",
+      const commentAuthor: EmbeddedUser = comment.author || {
+        id: comment.userId,
+        username: "unknown",
+        avatar: "/placeholder.svg",
+        name: "Unknown User",
       }
       return {
         ...comment,
@@ -141,7 +144,7 @@ const mapPostDoc = async (id: string, data: any): Promise<Post> => {
     ...data,
     createdAt: toDate(data.createdAt),
     updatedAt: toDate(data.updatedAt),
-    author: author,
+    author: author!,
     likes: normalizeArray(data.likes),
     comments: comments,
     isLiked: false, // This should be determined by client-side logic or a specific query
@@ -152,12 +155,16 @@ const mapPostDoc = async (id: string, data: any): Promise<Post> => {
 }
 
 const mapPlanDoc = async (id: string, data: any): Promise<Plan> => {
-  const organizerProfile = await getUser(data.userId) // Fetch full organizer profile
-  const organizer: EmbeddedUser = {
-    id: organizerProfile?.id || data.userId,
-    username: organizerProfile?.username || "unknown",
-    avatar: organizerProfile?.photoURL || "/placeholder.svg",
-    name: organizerProfile?.displayName || organizerProfile?.username || "Unknown User",
+  // Prefer embedded organizer; fallback to fetching when absent
+  let organizer: EmbeddedUser | undefined = data.organizer
+  if (!organizer) {
+    const organizerProfile = await getUser(data.userId)
+    organizer = {
+      id: organizerProfile?.id || data.userId,
+      username: organizerProfile?.username || "unknown",
+      avatar: organizerProfile?.photoURL || "/placeholder.svg",
+      name: organizerProfile?.displayName || organizerProfile?.username || "Unknown User",
+    }
   }
   return {
     id,
@@ -166,7 +173,7 @@ const mapPlanDoc = async (id: string, data: any): Promise<Plan> => {
     updatedAt: toDate(data.updatedAt),
     dateTime: toDate(data.dateTime),
     date: toDate(data.date), // Assuming 'date' is also a Timestamp
-    organizer: organizer,
+    organizer: organizer!,
     participantIds: normalizeArray(data.participantIds),
     currentParticipants: normalizeArray(data.participantIds).length,
     isJoined: false, // Client-side determined
@@ -464,91 +471,31 @@ export const getFollowerCount = async (userId: string): Promise<number> => {
   return 0
 }
 
-export const toggleFollowUser = async (followerId: string, followingId: string): Promise<void> => {
+export const toggleFollowUser = async (
+  followerId: string,
+  followingId: string,
+): Promise<{ following: boolean }> => {
   if (followerId === followingId) {
     throw new Error("Cannot follow yourself.")
   }
 
-  await runTransaction(db, async (transaction) => {
-    const followerRef = doc(db, "users", followerId)
-    const followingRef = doc(db, "users", followingId)
+  const token = await auth.currentUser?.getIdToken()
+  if (!token) throw new Error("Not authenticated")
 
-    const followerSnap = await transaction.get(followerRef)
-    const followingSnap = await transaction.get(followingRef)
-
-    if (!followerSnap.exists() || !followingSnap.exists()) {
-      throw new Error("User not found.")
-    }
-
-    const followerData = followerSnap.data() as UserProfile
-    const followingData = followingSnap.data() as UserProfile
-
-    const isFollowing = followerData.followingIds?.includes(followingId)
-
-    if (isFollowing) {
-      // Unfollow
-      transaction.update(followerRef, {
-        followingIds: arrayRemove(followingId),
-        following: (followerData.following || 0) - 1,
-      })
-      transaction.update(followingRef, {
-        followerIds: arrayRemove(followerId),
-        followers: (followingData.followers || 0) - 1,
-      })
-      if (analytics) logEvent(analytics, "unfollow_user", { followerId, followingId })
-    } else {
-      // Follow
-      if (followingData.isPrivate) {
-        // Send follow request
-        transaction.update(followingRef, {
-          pendingFollowRequests: arrayUnion(followerId),
-        })
-        transaction.update(followerRef, {
-          sentFollowRequests: arrayUnion(followingId),
-        })
-        // Add notification for the recipient
-        await addDoc(collection(db, "notifications"), {
-          toUserId: followingId,
-          fromUser: {
-            id: followerId,
-            username: followerData.username,
-            name: followerData.displayName,
-            avatar: followerData.photoURL,
-          },
-          type: "follow_request",
-          content: `${followerData.displayName} sent you a follow request.`,
-          isRead: false,
-          createdAt: serverTimestamp(),
-        })
-        if (analytics) logEvent(analytics, "follow_request_sent", { followerId, followingId })
-      } else {
-        // Direct follow
-        transaction.update(followerRef, {
-          followingIds: arrayUnion(followingId),
-          following: (followerData.following || 0) + 1,
-        })
-        transaction.update(followingRef, {
-          followerIds: arrayUnion(followerId),
-          followers: (followingData.followers || 0) + 1,
-        })
-        // Add notification for the recipient
-        await addDoc(collection(db, "notifications"), {
-          toUserId: followingId,
-          fromUser: {
-            id: followerId,
-            username: followerData.username,
-            name: followerData.displayName,
-            avatar: followerData.photoURL,
-          },
-          type: "follow",
-          content: `${followerData.displayName} started following you.`,
-          isRead: false,
-          createdAt: serverTimestamp(),
-        })
-        if (analytics) logEvent(analytics, "follow_user", { followerId, followingId })
-      }
-    }
+  const res = await fetch("/api/follows/toggle", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ followingId }),
   })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err?.error || "Failed to toggle follow")
+  }
+  const data = (await res.json()) as { ok: true; following: boolean }
+  return { following: data.following }
 }
 
 export const getFollowRequests = async (userId: string): Promise<UserProfile[]> => {
@@ -911,16 +858,11 @@ export const createPlan = async (
     maxParticipants?: number
     costPerHead: number
     currency: string
+    isPrivate?: boolean
   },
   imageFile?: File,
 ): Promise<string> => {
-  const userRef = doc(db, "users", userId)
-  const userSnap = await getDoc(userRef)
-  if (!userSnap.exists()) {
-    throw new Error("Organizer user not found.")
-  }
-  const userData = userSnap.data() as UserProfile
-
+  // Upload image client-side if provided, then call secure API to create the plan server-side
   let imageUrl = planData.imageUrl || ""
   if (imageFile) {
     const imageRef = ref(storage, `plans/${userId}/${imageFile.name}_${Date.now()}`)
@@ -928,30 +870,35 @@ export const createPlan = async (
     imageUrl = await getDownloadURL(snapshot.ref)
   }
 
-  const newPlanRef = doc(collection(db, "plans"))
-  await setDoc(newPlanRef, {
-    id: newPlanRef.id,
-    userId: userId,
-    organizer: {
-      id: userData.id,
-      username: userData.username,
-      name: userData.displayName,
-      avatar: userData.photoURL,
+  const token = await auth.currentUser?.getIdToken()
+  if (!token) throw new Error("Not authenticated")
+
+  const res = await fetch("/api/plans", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
-    title: planData.title,
-    description: planData.description,
-    imageUrl: imageUrl,
-    location: planData.location,
-    dateTime: planData.dateTime,
-    maxParticipants: planData.maxParticipants || null,
-    costPerHead: planData.costPerHead,
-    currency: planData.currency,
-    participantIds: [userId], // Organizer is the first participant
-    currentParticipants: 1,
-    createdAt: serverTimestamp(),
+    body: JSON.stringify({
+      title: planData.title,
+      description: planData.description,
+      imageUrl,
+      location: planData.location,
+      dateTime: planData.dateTime,
+      maxParticipants: planData.maxParticipants,
+      costPerHead: planData.costPerHead,
+      currency: planData.currency,
+      isPrivate: !!planData.isPrivate,
+    }),
   })
-  if (analytics) logEvent(analytics, "plan_created", { planId: newPlanRef.id, userId })
-  return newPlanRef.id
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err?.error || "Failed to create plan")
+  }
+  const data = await res.json()
+  if (analytics) logEvent(analytics, "plan_created", { planId: data?.id, userId })
+  return data.id as string
 }
 
 export const getPlans = async (
@@ -1014,59 +961,36 @@ export const getJoinedPlans = async (
 export const getPlan = async (planId: string): Promise<Plan | null> => {
   const planRef = doc(db, "plans", planId)
   const planSnap = await getDoc(planRef)
-  if (planSnap.exists()) {
-    return { id: planSnap.id, ...planSnap.data() } as Plan
-  }
-  return null
+  if (!planSnap.exists()) return null
+  const data = planSnap.data() || {}
+  const plan = await mapPlanDoc(planSnap.id, data)
+  return plan
 }
 
-export const joinPlan = async (planId: string, userId: string): Promise<void> => {
-  await runTransaction(db, async (transaction) => {
-    const planRef = doc(db, "plans", planId)
-    const planSnap = await transaction.get(planRef)
+export const joinPlan = async (
+  planId: string,
+): Promise<{ ok: true; joined: boolean; pending: boolean }> => {
+  const user = auth.currentUser
+  if (!user) throw new Error("Not authenticated")
+  const token = await user.getIdToken()
 
-    if (!planSnap.exists()) {
-      throw new Error("Plan not found.")
-    }
-
-    const planData = planSnap.data() as Plan
-    const isJoined = planData.participantIds.includes(userId)
-
-    if (isJoined) {
-      throw new Error("Already joined this plan.")
-    }
-
-    if (planData.maxParticipants && planData.currentParticipants >= planData.maxParticipants) {
-      throw new Error("Plan is full.")
-    }
-
-    transaction.update(planRef, {
-      participantIds: arrayUnion(userId),
-      currentParticipants: (planData.currentParticipants || 0) + 1,
-    })
-
-    // Add notification for the plan organizer
-    if (planData.userId !== userId) {
-      const joinerUser = await getUserProfile(userId)
-      if (joinerUser) {
-        await addDoc(collection(db, "notifications"), {
-          toUserId: planData.userId,
-          fromUser: {
-            id: joinerUser.id,
-            username: joinerUser.username,
-            name: joinerUser.displayName,
-            avatar: joinerUser.photoURL,
-          },
-          type: "plan_join",
-          content: `${joinerUser.displayName} joined your plan "${planData.title}".`,
-          planId: planId,
-          isRead: false,
-          createdAt: serverTimestamp(),
-        })
-      }
-    }
+  const res = await fetch(`/api/plans/${encodeURIComponent(planId)}/join`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
   })
-  if (analytics) logEvent(analytics, "plan_joined", { planId, userId })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err?.error || "Failed to join plan")
+  }
+  const data = (await res.json()) as { ok: true; joined: boolean; pending: boolean }
+  if (analytics) {
+    // Log attempt and outcome
+    logEvent(analytics, "plan_join_result", { planId, joined: data.joined, pending: data.pending })
+  }
+  return data
 }
 
 export const leavePlan = async (planId: string, userId: string): Promise<void> => {

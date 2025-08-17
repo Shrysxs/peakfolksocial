@@ -4,7 +4,7 @@ const nextConfig = {
     optimizeCss: true,
   },
   // Allow cross-origin requests from development network IP
-  allowedDevOrigins: ['10.22.67.23'],
+  allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS ? process.env.ALLOWED_DEV_ORIGINS.split(',') : [],
   // Handle chunk load errors
   webpack: (config, { dev, isServer }) => {
     // Add error handling for chunk loading

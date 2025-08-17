@@ -7,12 +7,27 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
-import { PostCard } from "@/components/post-card"
+import dynamic from "next/dynamic"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { usePosts } from "@/hooks/use-posts" // Import usePosts
 import { useDebounce } from "@/hooks/use-debounce" // Import useDebounce
-import { StoryBar } from "@/components/story-bar" // Import StoryBar
 import { ScrollArea } from "@/components/ui/scroll-area"
+
+// Lazy-load heavy components
+const StoryBar = dynamic(() => import("@/components/story-bar").then(m => ({ default: m.StoryBar })), {
+  loading: () => (
+    <div className="h-20 flex items-center justify-center">
+      <LoadingSpinner />
+    </div>
+  ),
+  ssr: false,
+})
+
+const PostCard = dynamic(() => import("@/components/post-card").then(m => ({ default: m.PostCard })), {
+  loading: () => (
+    <div className="rounded-lg border border-gray-800 bg-gray-900 h-40 animate-pulse" />
+  ),
+})
 
 export default function FeedPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -49,7 +64,7 @@ export default function FeedPage() {
             className="pl-10 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-orange-500"
           />
         </div>
-        <StoryBar /> {/* Include the StoryBar component */}
+        <StoryBar /> {/* Lazy-loaded StoryBar */}
       </div>
 
       <h1 className="text-3xl font-bold text-white mb-6 text-center">Feed</h1>

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,18 +30,34 @@ import { useAuth } from "@/contexts/auth-context"
 import { usePlan, useJoinPlan, useLeavePlan } from "@/hooks/use-plans"
 import usePlanMembers from "@/hooks/use-plan-members"
 import { LoadingSpinner } from "@/components/loading-spinner"
-import { PlanChat } from "@/components/plan-chat"
-import { PlanManagementDialog } from "@/components/plan-management-dialog"
 import { toast } from "sonner"
 import { toDate } from "@/lib/firebase-services"
 import Image from "next/image"
 import Link from "next/link"
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+
+// Lazy-loaded heavy components
+const PlanChat = dynamic(() => import("@/components/plan-chat").then(m => ({ default: m.PlanChat })), {
+  loading: () => (
+    <div className="h-[600px] flex items-center justify-center">
+      <LoadingSpinner />
+    </div>
+  ),
+})
+
+const PlanManagementDialog = dynamic(
+  () => import("@/components/plan-management-dialog").then(m => ({ default: m.PlanManagementDialog })),
+  {
+    loading: () => null,
+    ssr: false,
+  },
+)
 
 export default function PlanDetailPage() {
   const { planId } = useParams<{ planId: string }>()
