@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import { adminAuth, adminDb, FieldValue } from "@/lib/firebase-admin"
+import { getAdminAuth, getAdminDb, FieldValue } from "@/lib/firebase-admin"
 import type { Transaction, DocumentData } from "firebase-admin/firestore"
 
 export async function POST(req: NextRequest, { params }: { params: { planId: string } }) {
   try {
+    const adminAuth = getAdminAuth()
+    const adminDb = getAdminDb()
     const authHeader = req.headers.get("authorization") || ""
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : undefined
     if (!token) return NextResponse.json({ error: "Missing Authorization header" }, { status: 401 })

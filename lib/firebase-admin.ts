@@ -2,10 +2,13 @@ import { initializeApp, getApps, cert, App } from "firebase-admin/app"
 import { getAuth } from "firebase-admin/auth"
 import { getFirestore, FieldValue as AdminFieldValue } from "firebase-admin/firestore"
 
-// Server-only: initialize Firebase Admin SDK once
-let adminApp: App
+// Lazy initialization to prevent build-time crashes
+let adminApp: App | null = null
 
-if (!getApps().length) {
+function initAdmin(): App {
+  const existing = getApps()[0]
+  if (existing) return existing
+
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
   let privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY
@@ -15,22 +18,33 @@ if (!getApps().length) {
   }
 
   if (!projectId || !clientEmail || !privateKey) {
-    console.warn(
+    throw new Error(
       "[Firebase Admin] Missing service account credentials. Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, FIREBASE_ADMIN_PRIVATE_KEY in the environment.",
     )
   }
 
-  adminApp = initializeApp({
+  return initializeApp({
     credential: cert({
-      projectId: projectId,
-      clientEmail: clientEmail,
-      privateKey: privateKey,
+      projectId,
+      clientEmail,
+      privateKey,
     }),
   })
-} else {
-  adminApp = getApps()[0]!
 }
 
-export const adminAuth = getAuth(adminApp)
-export const adminDb = getFirestore(adminApp)
+export function getAdminApp(): App {
+  if (!adminApp) {
+    adminApp = initAdmin()
+  }
+  return adminApp
+}
+
+export function getAdminAuth() {
+  return getAuth(getAdminApp())
+}
+
+export function getAdminDb() {
+  return getFirestore(getAdminApp())
+}
+
 export const FieldValue = AdminFieldValue

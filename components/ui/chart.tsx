@@ -136,8 +136,8 @@ const ChartTooltipContent = React.forwardRef<
     },
     ref
   ) => {
-    const rawPayload = (props as { payload?: unknown[] }).payload
-    const payload = React.useMemo(() => (rawPayload ?? []), [rawPayload])
+    const rawPayload = (props as { payload?: PayloadItem[] }).payload
+    const payload = React.useMemo<PayloadItem[]>(() => rawPayload ?? [], [rawPayload])
     const label = (props as { label?: unknown }).label
     const { config } = useChart()
 
@@ -193,10 +193,9 @@ const ChartTooltipContent = React.forwardRef<
       >
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
-          {payload.map((item: unknown, index: number) => {
-            const pi = item as PayloadItem
+          {payload.map((pi: PayloadItem, index: number) => {
             const key = `${nameKey || pi.name || pi.dataKey || "value"}`
-            const itemConfig = getPayloadConfigFromPayload(config, item as unknown, key)
+            const itemConfig = getPayloadConfigFromPayload(config, pi, key)
             const indicatorColor = color || pi.payload?.fill || pi.color
 
             return (
@@ -208,7 +207,7 @@ const ChartTooltipContent = React.forwardRef<
                 )}
               >
                 {formatter && pi?.value !== undefined && pi.name ? (
-                  formatter(pi.value as number, pi.name as string, item, index, pi.payload)
+                  formatter(pi.value as number, pi.name as string, pi, index, payload as unknown as any[])
                 ) : (
                   <>
                     {itemConfig?.icon ? (
@@ -244,12 +243,12 @@ const ChartTooltipContent = React.forwardRef<
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
                         <span className="text-muted-foreground">
-                          {itemConfig?.label || item.name}
+                          {itemConfig?.label || pi.name}
                         </span>
                       </div>
-                      {item.value && (
+                      {pi.value && (
                         <span className="font-mono font-medium tabular-nums text-foreground">
-                          {item.value.toLocaleString()}
+                          {pi.value.toLocaleString()}
                         </span>
                       )}
                     </div>
