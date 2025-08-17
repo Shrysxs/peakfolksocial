@@ -442,7 +442,6 @@ export default function PlanDetailPage() {
         <TabsContent value="chat" className="mt-6 h-[600px]">
           <PlanChat 
             planId={plan.id} 
-            planTitle={plan.title} 
             isOrganizer={isOrganizer} 
           />
         </TabsContent>

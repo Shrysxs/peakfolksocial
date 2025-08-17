@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { adminAuth, adminDb, FieldValue } from "@/lib/firebase-admin"
+import type { Transaction, DocumentData } from "firebase-admin/firestore"
 
 export async function POST(req: NextRequest, { params }: { params: { planId: string } }) {
   try {
@@ -16,13 +17,13 @@ export async function POST(req: NextRequest, { params }: { params: { planId: str
     const planRef = adminDb.collection("plans").doc(planId)
     const userRef = adminDb.collection("users").doc(userId)
 
-    const result = await adminDb.runTransaction(async (tx: any) => {
+    const result = await adminDb.runTransaction(async (tx: Transaction) => {
       const [planSnap, userSnap] = await Promise.all([tx.get(planRef), tx.get(userRef)])
       if (!planSnap.exists) throw new Error("Plan not found")
       if (!userSnap.exists) throw new Error("User not found")
 
-      const planData = planSnap.data() as any
-      const userData = userSnap.data() as any
+      const planData = planSnap.data() as DocumentData
+      const userData = userSnap.data() as DocumentData
 
       const participantIds: string[] = Array.isArray(planData.participantIds) ? planData.participantIds : []
       const currentParticipants: number = Number(planData.currentParticipants || participantIds.length || 0)
@@ -98,8 +99,8 @@ export async function POST(req: NextRequest, { params }: { params: { planId: str
     })
 
     return NextResponse.json({ ok: true, ...result }, { status: 200 })
-  } catch (err: any) {
-    const message = String(err?.message || err)
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
     const status = /not found/i.test(message) ? 404 : /full|capacity/i.test(message) ? 409 : 500
     console.error("[API] /api/plans/[planId]/join POST error", err)
     return NextResponse.json({ error: message || "Server error" }, { status })

@@ -1,13 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { 
   Edit, 
   Trash2, 
@@ -21,8 +19,6 @@ import {
   Loader2
 } from "lucide-react"
 import { usePlanManagement } from "@/hooks/use-plan-management"
-import { LoadingSpinner } from "./loading-spinner"
-import { toast } from "sonner"
 import { toDate } from "@/lib/firebase-services"
 import type { Plan } from "@/types"
 import {

@@ -28,7 +28,7 @@ export function SharePostDialog({ open, onOpenChange, postId }: SharePostDialogP
           url: postLink,
         })
         // Post shared successfully
-      } catch (error) {
+      } catch {
         // Error sharing post
         toast.error("Failed to share post.")
       }

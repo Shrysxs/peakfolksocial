@@ -1,16 +1,3 @@
-// Lazy-loaded cards with light fallbacks to minimize initial bundle
-const UserCard = dynamic(() => import("@/components/user-card").then(m => ({ default: m.UserCard })), {
-  loading: () => <div className="h-16 rounded-lg bg-gray-900 border border-gray-800 animate-pulse" />,
-})
-
-const PostCard = dynamic(() => import("@/components/post-card").then(m => ({ default: m.PostCard })), {
-  loading: () => <div className="h-40 rounded-lg bg-gray-900 border border-gray-800 animate-pulse" />,
-})
-
-const PlanCard = dynamic(() => import("@/components/plan-card").then(m => ({ default: m.PlanCard })), {
-  loading: () => <div className="h-56 rounded-lg bg-gray-900 border border-gray-800 animate-pulse" />,
-})
-
 "use client"
 
 import * as React from "react"
@@ -25,6 +12,19 @@ import useExplore from "@/hooks/use-explore" // Import the new useExplore hook
 import { LoadingSpinner } from "@/components/loading-spinner"
 import dynamic from "next/dynamic"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+// Lazy-loaded cards with light fallbacks to minimize initial bundle
+const UserCard = dynamic(() => import("@/components/user-card").then(m => ({ default: m.UserCard })), {
+  loading: () => <div className="h-16 rounded-lg bg-gray-900 border border-gray-800 animate-pulse" />,
+})
+
+const PostCard = dynamic(() => import("@/components/post-card").then(m => ({ default: m.PostCard })), {
+  loading: () => <div className="h-40 rounded-lg bg-gray-900 border border-gray-800 animate-pulse" />,
+})
+
+const PlanCard = dynamic(() => import("@/components/plan-card").then(m => ({ default: m.PlanCard })), {
+  loading: () => <div className="h-56 rounded-lg bg-gray-900 border border-gray-800 animate-pulse" />,
+})
 
 export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState("")

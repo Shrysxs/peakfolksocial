@@ -1,5 +1,5 @@
 "use client"
-import { Home, Compass, PlusSquare, Bell, MessageSquare, User } from "lucide-react"
+import { Home, Compass, PlusSquare, Bell, User } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -18,7 +18,7 @@ export function MobileNavigation() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 glass-nav z-50 md:hidden safe-bottom">
       <div className="max-w-md mx-auto flex w-full justify-between items-center px-2 py-2">
-        {navItems.map((item, idx) => {
+        {navItems.map((item) => {
           // Special styling for the center '+' button
           if (item.href === "/create") {
             return (
@@ -42,7 +42,6 @@ export function MobileNavigation() {
             )
           }
           // Notification and message badge placeholders
-          const isNotification = item.href === "/notifications"
           const isProfile = item.href === "/profile"
           return (
             <Link

@@ -223,7 +223,7 @@ export default function MessagesPage() {
     const typingDocId = [dbUser.id, chatWith].sort().join("_");
     const typingDocRef = doc(db, "typingStatus", typingDocId);
 
-    let typingTimeout: NodeJS.Timeout | null = null;
+    const typingTimeout: NodeJS.Timeout | null = null;
 
     // Listen for typing status from the other user
     const unsubscribe = onSnapshot(typingDocRef, (docSnap) => {

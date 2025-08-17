@@ -4,11 +4,9 @@ import { Button } from "@/components/ui/button"
 import { MountainIcon, Search, Bell, MessageSquare } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/contexts/auth-context"
-import { useRouter } from "next/navigation"
 
 export function MobileHeader() {
   const { dbUser } = useAuth()
-  const router = useRouter()
 
   return (
     <header className="sticky top-0 z-40 w-full bg-black/80 backdrop-blur-md border-b border-gray-800 px-4 py-3 flex items-center justify-between md:hidden">

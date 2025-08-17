@@ -10,15 +10,22 @@ import { PlusCircle } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { CreateStoryDialog } from "./create-story-dialog"
 
+type StoryForViewer = {
+  userId?: string
+  imageUrl?: string
+  createdAt?: unknown
+  author?: { username?: string; name?: string; avatar?: string }
+}
+
 export function StoryBar() {
   const { dbUser } = useAuth()
   const { stories, isLoading, isError } = useActiveStories() // Use the new hook
   const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false)
-  const [currentStories, setCurrentStories] = useState<any[]>([])
+  const [currentStories, setCurrentStories] = useState<StoryForViewer[]>([])
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [isCreateStoryDialogOpen, setIsCreateStoryDialogOpen] = useState(false)
 
-  const handleStoryClick = (userStories: any[], initialIndex = 0) => {
+  const handleStoryClick = (userStories: StoryForViewer[], initialIndex = 0) => {
     setCurrentStories(userStories)
     setCurrentStoryIndex(initialIndex)
     setIsStoryViewerOpen(true)
@@ -53,7 +60,7 @@ export function StoryBar() {
             </div>
           )}
           {stories.length === 0 && !dbUser && <p className="text-gray-400 text-center w-full">No stories available.</p>}
-          {stories.map((userStories, index) => (
+          {stories.map((userStories) => (
             <div
               key={userStories[0].userId}
               className="flex flex-col items-center space-y-1 cursor-pointer"

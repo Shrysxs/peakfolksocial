@@ -59,7 +59,7 @@ export function useJoinPlan() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ planId, userId }: { planId: string; userId: string }) => joinPlanService(planId, userId),
+    mutationFn: ({ planId, userId }: { planId: string; userId: string }) => joinPlanService(planId),
     onMutate: async ({ planId, userId }) => {
       // Optimistically update the plan's participant list and count
       await queryClient.cancelQueries({ queryKey: ["plans", planId] })

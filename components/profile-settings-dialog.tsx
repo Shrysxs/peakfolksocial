@@ -122,7 +122,7 @@ export function ProfileSettingsDialog({ open, onOpenChange }: ProfileSettingsDia
         await updateUserProfile({ userId, data: { [key]: value } })
       }
       toast.success("Setting updated")
-    } catch (error) {
+    } catch {
       toast.error("Failed to update setting")
       setSettings((prev) => ({ ...prev, [key]: !value }))
     }
@@ -154,8 +154,9 @@ export function ProfileSettingsDialog({ open, onOpenChange }: ProfileSettingsDia
       await logout()
       toast.success("Logged out successfully!")
       router.push("/login")
-    } catch (error: any) {
-      toast.error(`Logout failed: ${error.message}`)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error"
+      toast.error(`Logout failed: ${message}`)
     }
   }
 

@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     batch.update(userRef, { plans: (userData.plans || 0) + 1 })
     await batch.commit()
     return NextResponse.json({ id: planRef.id }, { status: 201 })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[API] /api/plans POST error", err)
     return NextResponse.json({ error: "Server error" }, { status: 500 })
   }

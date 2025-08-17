@@ -74,7 +74,7 @@ export default function NotificationsPage() {
           </div>
           <h2 className="text-2xl font-bold text-white mb-3">All Caught Up!</h2>
           <p className="text-gray-400 mb-6">
-            You're all up to date! When you get new notifications about likes, comments, follows, or messages, they'll appear here in real-time.
+            You&apos;re all up to date! When you get new notifications about likes, comments, follows, or messages, they&apos;ll appear here in real-time.
           </p>
           <div className="space-y-3 text-sm text-gray-500">
             <div className="flex items-center justify-center space-x-2">

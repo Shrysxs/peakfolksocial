@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { checkUsernameExists } from "@/lib/firebase-services" // Import the new service function
 import { useRouter } from "next/navigation"
+import type { ConfirmationResult } from "firebase/auth"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -23,7 +24,7 @@ export default function RegisterPage() {
   const [phoneNumber, setPhoneNumber] = useState("")
   const [otp, setOtp] = useState("")
   const [showOtpInput, setShowOtpInput] = useState(false)
-  const [confirmationResult, setConfirmationResult] = useState<any>(null) // Firebase ConfirmationResult
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
 
   const { register, signInWithGoogle, signInWithPhone, confirmPhoneCode, loading } = useAuth()
 
@@ -41,7 +42,7 @@ export default function RegisterPage() {
       }
       await register(email, password, username)
       router.push("/login")
-    } catch (error) {
+    } catch {
       // Error handled by useAuth hook
     }
   }
@@ -49,7 +50,7 @@ export default function RegisterPage() {
   const handleGoogleRegister = async () => {
     try {
       await signInWithGoogle()
-    } catch (error) {
+    } catch {
       // Error handled by useAuth hook
     }
   }
@@ -62,7 +63,7 @@ export default function RegisterPage() {
         setConfirmationResult(result)
         setShowOtpInput(true)
       }
-    } catch (error) {
+    } catch {
       // Error handled by useAuth hook
     }
   }
@@ -75,7 +76,7 @@ export default function RegisterPage() {
     }
     try {
       await confirmPhoneCode(confirmationResult, otp)
-    } catch (error) {
+    } catch {
       // Error handled by useAuth hook
     }
   }

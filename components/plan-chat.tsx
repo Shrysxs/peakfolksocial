@@ -13,9 +13,6 @@ import {
   Mic, 
   Image as ImageIcon, 
   Megaphone, 
-  MoreVertical,
-  Clock,
-  Check,
   CheckCheck
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
@@ -23,20 +20,14 @@ import { usePlanChat } from "@/hooks/use-plan-chat"
 import { LoadingSpinner } from "./loading-spinner"
 import { toDate } from "@/lib/firebase-services"
 import type { PlanMessage } from "@/types"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+ 
 
 interface PlanChatProps {
   planId: string
-  planTitle: string
   isOrganizer: boolean
 }
 
-export function PlanChat({ planId, planTitle, isOrganizer }: PlanChatProps) {
+export function PlanChat({ planId, isOrganizer }: PlanChatProps) {
   const { dbUser } = useAuth()
   const [message, setMessage] = useState("")
   const [isAnnouncement, setIsAnnouncement] = useState(false)
@@ -83,7 +74,7 @@ export function PlanChat({ planId, planTitle, isOrganizer }: PlanChatProps) {
     }
   }
 
-  const formatTime = (date: Date | any) => {
+  const formatTime = (date: Date | unknown) => {
     const messageDate = toDate(date)
     if (!messageDate) return ""
     

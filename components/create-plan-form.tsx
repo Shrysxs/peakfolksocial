@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useState } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -249,7 +250,7 @@ export function CreatePlanForm({ onPlanCreated }: CreatePlanFormProps) {
         </div>
         {imagePreview && (
           <div className="mt-2 relative w-full h-48 rounded-md overflow-hidden">
-            <img src={imagePreview || "/placeholder.svg"} alt="Image Preview" className="object-cover w-full h-full" />
+            <Image src={imagePreview || "/placeholder.svg"} alt="Image Preview" fill className="object-cover" />
           </div>
         )}
       </div>

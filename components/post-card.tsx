@@ -41,7 +41,7 @@ interface PostCardProps {
     caption: string
     imageUrl: string
     likes: string[] // Array of user IDs
-    createdAt: any // Firestore Timestamp
+    createdAt: unknown // Firestore Timestamp
   }
 }
 

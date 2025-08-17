@@ -1,15 +1,15 @@
 "use client"
 
-import { Calendar as CalendarIcon, Mountain, MapPin, LinkIcon, Camera, Compass, Heart, Sparkles, BookOpen, Users, Clock, Star } from "lucide-react"
+import { Calendar as CalendarIcon, Mountain, MapPin, LinkIcon, Camera, Compass, Heart, Sparkles, Users, Clock, Star } from "lucide-react"
 import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/contexts/auth-context"
-import { useUser, useUserPosts, useHandleFollowRequest } from "@/hooks/use-users"
+import { useUser, useUserPosts } from "@/hooks/use-users"
 import useFollowUser from "@/hooks/use-follow-user"
 import { useJoinedPlans, useCreatedPlans } from "@/hooks/use-plans"
-import { PostCard } from "@/components/post-card"
+// import { PostCard } from "@/components/post-card"
 import { PlanCard } from "@/components/plan-card"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { toDate } from "@/lib/firebase-services"
@@ -29,11 +29,10 @@ export default function UserProfilePage() {
 
   const { data: profileUser, isLoading: isLoadingProfileUser, isError: isErrorProfileUser } = useUser(userId)
   const { isFollowing, toggleFollow, isLoading: isTogglingFollow } = useFollowUser(dbUser?.id, userId)
-  const { mutate: handleFollowRequest, isPending: isHandlingRequest } = useHandleFollowRequest()
 
   const {
     data: userPostsData,
-    fetchNextPage: fetchNextUserPosts,
+    // fetchNextPage: fetchNextUserPosts,
     hasNextPage: hasNextUserPosts,
     isFetchingNextPage: isFetchingNextUserPosts,
     isLoading: isLoadingUserPosts,
@@ -63,7 +62,7 @@ export default function UserProfilePage() {
 
   const isCurrentUserProfile = dbUser?.id === userId
   const hasPendingRequestFromCurrentUser = dbUser?.sentFollowRequests?.includes(userId) || false
-  const hasPendingRequestToCurrentUser = profileUser?.pendingFollowRequests?.includes(dbUser?.id || "") || false
+  // const hasPendingRequestToCurrentUser = profileUser?.pendingFollowRequests?.includes(dbUser?.id || "") || false
 
   const handleFollowToggle = () => {
     if (!dbUser) {
@@ -77,13 +76,13 @@ export default function UserProfilePage() {
     toggleFollow({ followerId: dbUser.id, followingId: userId })
   }
 
-  const handleRequestAction = (accept: boolean) => {
-    if (!dbUser) {
-      toast.error("You must be logged in to handle follow requests.")
-      return
-    }
-    handleFollowRequest({ requesterId: userId, targetUserId: dbUser.id, accept })
-  }
+  // const handleRequestAction = (accept: boolean) => {
+  //   if (!dbUser) {
+  //     toast.error("You must be logged in to handle follow requests.")
+  //     return
+  //   }
+  //   handleFollowRequest({ requesterId: userId, targetUserId: dbUser.id, accept })
+  // }
 
   if (isLoadingProfileUser) {
     return (
@@ -102,7 +101,7 @@ export default function UserProfilePage() {
         <div className="glass-card p-8 rounded-lg shadow-md text-center">
           <Mountain className="h-16 w-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Adventure Not Found</h2>
-          <p className="text-red-500 mb-6">This explorer's profile couldn't be loaded. They might have moved on to new peaks.</p>
+          <p className="text-red-500 mb-6">This explorer&apos;s profile couldn&apos;t be loaded. They might have moved on to new peaks.</p>
           <Button 
             onClick={() => router.back()} 
             className="bg-orange-600 hover:bg-orange-700"
@@ -232,7 +231,7 @@ export default function UserProfilePage() {
           {!hasNextUserPosts && userPosts.length > 0 && (
             <div className="text-center">
               <Star className="h-6 w-6 text-orange-500 mx-auto mb-2" />
-              <p className="text-gray-400 text-sm">You've reached the end of this adventure</p>
+              <p className="text-gray-400 text-sm">You&apos;ve reached the end of this adventure</p>
             </div>
           )}
         </div>
@@ -281,7 +280,7 @@ export default function UserProfilePage() {
           </div>
           <h3 className="text-xl font-semibold text-white mb-3">No Adventures Planned Yet</h3>
           <p className="text-gray-400 mb-6 max-w-md mx-auto">
-            The greatest adventures are those that haven't been planned yet. When you create or join your first expedition, it will appear here.
+            The greatest adventures are those that haven&apos;t been planned yet. When you create or join your first expedition, it will appear here.
           </p>
           <div className="space-y-3 text-sm text-gray-500 mb-6">
             <div className="flex items-center justify-center space-x-2">
@@ -430,7 +429,7 @@ export default function UserProfilePage() {
             </div>
             
             {profileUser.bio && (
-              <p className="text-gray-300 mb-4 italic">"{profileUser.bio}"</p>
+              <p className="text-gray-300 mb-4 italic">&quot;{profileUser.bio}&quot;</p>
             )}
 
             <div className="flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-2 text-gray-400 text-xs sm:text-sm mb-4">
@@ -481,7 +480,7 @@ export default function UserProfilePage() {
       {profileUser.isPrivate && !isFollowing && !isCurrentUserProfile && (
         <div className="glass-card p-6 rounded-lg shadow-md text-center text-gray-400 mb-6">
           <Mountain className="h-12 w-12 text-gray-500 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold mb-2">This Explorer's Journey is Private</h3>
+          <h3 className="text-lg font-semibold mb-2">This Explorer&apos;s Journey is Private</h3>
           <p>Follow to see their memories and adventures.</p>
         </div>
       )}

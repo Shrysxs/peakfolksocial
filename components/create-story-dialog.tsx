@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useState } from "react"
+import Image from "next/image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -92,10 +93,11 @@ export function CreateStoryDialog({ open, onOpenChange }: CreateStoryDialogProps
             </div>
             {imagePreview && (
               <div className="mt-2 relative w-full h-64 rounded-md overflow-hidden">
-                <img
+                <Image
                   src={imagePreview || "/placeholder.svg"}
                   alt="Story Preview"
-                  className="object-cover w-full h-full"
+                  fill
+                  className="object-cover"
                 />
               </div>
             )}

@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     await batch.commit()
 
     return NextResponse.json({ ok: true, following: !isFollowing }, { status: 200 })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[API] /api/follows/toggle POST error", err)
     return NextResponse.json({ error: "Server error" }, { status: 500 })
   }

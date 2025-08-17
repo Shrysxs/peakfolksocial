@@ -32,7 +32,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null)
   const [previewPhotoURL, setPreviewPhotoURL] = useState<string | null>(null)
 
-  const { updateProfile, loading: isUpdating, error: updateError } = useUpdateProfile() // Use the new hook
+  const { updateProfile, loading: isUpdating } = useUpdateProfile() // Use the new hook
 
   useEffect(() => {
     if (open && currentUserProfile) {

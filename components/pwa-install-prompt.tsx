@@ -12,20 +12,27 @@ import {
 } from "@/components/ui/dialog"
 import { Download } from "lucide-react"
 
+// Minimal type for the BeforeInstallPromptEvent
+type BeforeInstallPromptEvent = Event & {
+  readonly platforms?: string[]
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>
+}
+
 declare global {
   interface Window {
-    deferredPrompt: any
+    deferredPrompt?: BeforeInstallPromptEvent | null
   }
 }
 
 export function PWAInstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
-      setDeferredPrompt(e)
+      setDeferredPrompt(e as BeforeInstallPromptEvent)
       setIsVisible(true)
     }
 

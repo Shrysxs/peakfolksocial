@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, MapPin, Calendar, DollarSign, Filter, X } from "lucide-react"
+import { Search, MapPin, Calendar, Filter, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -92,7 +92,6 @@ export function AdvancedSearch({ onSearch, onClear, isLoading }: AdvancedSearchP
   })
 
   const [isLocationFocused, setIsLocationFocused] = useState(false)
-  const [showFilters, setShowFilters] = useState(false)
 
   // Handle location autocomplete
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([])

@@ -26,7 +26,7 @@ interface PlanCardProps {
     description: string
     imageUrl: string
     location: string
-    dateTime: any // Firestore Timestamp
+    dateTime: unknown // Firestore Timestamp
     costPerHead: number
     currency: string
     participantIds: string[] // Array of user IDs

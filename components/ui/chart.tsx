@@ -8,6 +8,14 @@ import { cn } from "@/lib/utils"
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
 
+type PayloadItem = {
+  name?: string
+  dataKey?: string
+  value?: number
+  color?: string
+  payload?: { fill?: string }
+}
+
 export type ChartConfig = {
   [k in string]: {
     label?: React.ReactNode
@@ -68,9 +76,7 @@ const ChartContainer = React.forwardRef<
 ChartContainer.displayName = "Chart"
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
-  const colorConfig = Object.entries(config).filter(
-    ([_, config]) => config.theme || config.color
-  )
+  const colorConfig = Object.entries(config).filter(([, cfg]) => cfg.theme || cfg.color)
 
   if (!colorConfig.length) {
     return null
@@ -130,8 +136,9 @@ const ChartTooltipContent = React.forwardRef<
     },
     ref
   ) => {
-    const payload = (props as any).payload || []
-    const label = (props as any).label
+    const rawPayload = (props as { payload?: unknown[] }).payload
+    const payload = React.useMemo(() => (rawPayload ?? []), [rawPayload])
+    const label = (props as { label?: unknown }).label
     const { config } = useChart()
 
     const tooltipLabel = React.useMemo(() => {
@@ -186,21 +193,22 @@ const ChartTooltipContent = React.forwardRef<
       >
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
-          {payload.map((item: any, index: number) => {
-            const key = `${nameKey || item.name || item.dataKey || "value"}`
-            const itemConfig = getPayloadConfigFromPayload(config, item, key)
-            const indicatorColor = color || item.payload.fill || item.color
+          {payload.map((item: unknown, index: number) => {
+            const pi = item as PayloadItem
+            const key = `${nameKey || pi.name || pi.dataKey || "value"}`
+            const itemConfig = getPayloadConfigFromPayload(config, item as unknown, key)
+            const indicatorColor = color || pi.payload?.fill || pi.color
 
             return (
               <div
-                key={item.dataKey}
+                key={pi.dataKey}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
                 )}
               >
-                {formatter && item?.value !== undefined && item.name ? (
-                  formatter(item.value, item.name, item, index, item.payload)
+                {formatter && pi?.value !== undefined && pi.name ? (
+                  formatter(pi.value as number, pi.name as string, item, index, pi.payload)
                 ) : (
                   <>
                     {itemConfig?.icon ? (
@@ -264,7 +272,7 @@ const ChartLegendContent = React.forwardRef<
   React.ComponentProps<"div"> & {
       hideIcon?: boolean
       nameKey?: string
-      payload?: any[]
+      payload?: unknown[]
       verticalAlign?: string
     }
 >(
@@ -287,13 +295,14 @@ const ChartLegendContent = React.forwardRef<
           className
         )}
       >
-        {payload.map((item: any) => {
-          const key = `${nameKey || item.dataKey || "value"}`
-          const itemConfig = getPayloadConfigFromPayload(config, item, key)
+        {payload.map((item: unknown) => {
+          const li = item as PayloadItem
+          const key = `${nameKey || li.dataKey || "value"}`
+          const itemConfig = getPayloadConfigFromPayload(config, item as unknown, key)
 
           return (
             <div
-              key={item.value}
+              key={String(li.value)}
               className={cn(
                 "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
               )}
@@ -304,7 +313,7 @@ const ChartLegendContent = React.forwardRef<
                 <div
                   className="h-2 w-2 shrink-0 rounded-[2px]"
                   style={{
-                    backgroundColor: item.color,
+                    backgroundColor: li.color,
                   }}
                 />
               )}

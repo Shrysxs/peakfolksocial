@@ -7,10 +7,17 @@ import Image from "next/image"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toDate } from "@/lib/firebase-services"
 
+type StoryForViewer = {
+  userId?: string
+  imageUrl?: string
+  createdAt?: unknown
+  author?: { username?: string; name?: string; avatar?: string }
+}
+
 interface StoryViewerDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  stories: any[] // Array of stories for a single user
+  stories: StoryForViewer[] // Array of stories for a single user
   initialStoryIndex?: number
 }
 
