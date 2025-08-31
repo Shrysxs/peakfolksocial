@@ -12,10 +12,12 @@ import { useAuth } from "@/contexts/auth-context"
 import useForgotPassword from "@/hooks/use-forgot-password" // Import the new hook
 import { toast } from "sonner"
 import { LoadingSpinner } from "@/components/loading-spinner"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function LoginPage() {
   const router = useRouter()
+  const search = useSearchParams()
+  const nextPath = search?.get("next") || "/feed"
   const { login, signInWithGoogle, signInWithPhone, confirmPhoneCode, loading } = useAuth()
   const { sendResetEmail, loading: isSendingResetEmail } = useForgotPassword() // Use the new hook
   const [email, setEmail] = useState("")
@@ -29,7 +31,7 @@ export default function LoginPage() {
     e.preventDefault()
     try {
       await login(email, password)
-      router.push("/feed")
+      router.push(nextPath)
     } catch (error) {
       // Error handled by useAuth hook
     }
@@ -38,6 +40,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       await signInWithGoogle()
+      router.push(nextPath)
     } catch (error) {
       // Error handled by useAuth hook
     }
@@ -64,6 +67,7 @@ export default function LoginPage() {
     }
     try {
       await confirmPhoneCode(confirmationResult, otp)
+      router.push(nextPath)
     } catch (error) {
       // Error handled by useAuth hook
     }
