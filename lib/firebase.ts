@@ -26,7 +26,20 @@ const storage = isBrowser ? getStorage(app) : (undefined as unknown as ReturnTyp
  * Initialize Analytics **only** in the browser.
  * The Analytics SDK throws when invoked on the server.
  */
-const analytics = isBrowser ? getAnalytics(app) : undefined
+// Only enable analytics if a measurementId exists and the environment supports it.
+let analytics: ReturnType<typeof getAnalytics> | undefined = undefined
+if (isBrowser) {
+  try {
+    const cfg = getFirebasePublic(false)
+    if (cfg.measurementId) {
+      // getAnalytics can throw on some environments (e.g., unsupported browsers)
+      analytics = getAnalytics(app)
+    }
+  } catch {
+    // Silently disable analytics rather than crashing the app
+    analytics = undefined
+  }
+}
 
 /* ------------------------- Google Auth Provider -------------------------- */
 const googleProvider = new GoogleAuthProvider()

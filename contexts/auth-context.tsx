@@ -40,17 +40,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // If auth is somehow unavailable, don't crash the app
+    if (!auth) {
+      setLoading(false)
+      return
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user)
       if (user) {
-        const userDocRef = doc(db, "users", user.uid)
-        const userDocSnap = await getDoc(userDocRef)
-        if (userDocSnap.exists()) {
-          setDbUser({ id: userDocSnap.id, ...userDocSnap.data() } as DBUser)
-        } else {
-          // If user exists in Auth but not in DB (e.g., new Google sign-in before profile creation)
-          // This case should ideally be handled during initial sign-in, but as a fallback:
-          setDbUser(null) // Or create a minimal profile here if necessary
+        try {
+          if (!db) throw new Error("Firestore not initialized")
+          const userDocRef = doc(db, "users", user.uid)
+          const userDocSnap = await getDoc(userDocRef)
+          if (userDocSnap.exists()) {
+            setDbUser({ id: userDocSnap.id, ...userDocSnap.data() } as DBUser)
+          } else {
+            setDbUser(null)
+          }
+        } catch (e) {
+          // Swallow Firestore init errors to avoid crashing UI
+          setDbUser(null)
         }
       } else {
         setDbUser(null)

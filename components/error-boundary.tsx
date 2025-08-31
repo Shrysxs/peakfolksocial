@@ -27,10 +27,9 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error boundary caught an error:', error, errorInfo)
-    }
+    // Log error to console in all environments for diagnostics
+    // Avoid exposing details in UI; console is sufficient in production (Vercel logs capture this)
+    console.error('Error boundary caught an error:', error, errorInfo)
 
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo)
