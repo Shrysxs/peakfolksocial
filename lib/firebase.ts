@@ -16,13 +16,12 @@ const firebaseConfig = getFirebasePublic(false)
 /* ---------------------------- Initialize SDKs ---------------------------- */
 const isBrowser = typeof window !== "undefined"
 
-// Validate required client keys before attempting init to avoid hard throws
+// Validate minimal client keys before attempting init
+// Auth/Firestore only require: apiKey, authDomain, projectId, appId
 const hasClientFirebaseConfig = Boolean(
   firebaseConfig.apiKey &&
   firebaseConfig.authDomain &&
   firebaseConfig.projectId &&
-  firebaseConfig.storageBucket &&
-  firebaseConfig.messagingSenderId &&
   firebaseConfig.appId
 )
 
@@ -40,7 +39,7 @@ if (isBrowser && !hasClientFirebaseConfig) {
   // This log replaces a hard throw from requireEnv so the app remains usable enough to render login pages.
   // eslint-disable-next-line no-console
   console.error(
-    "Firebase client config is incomplete. Ensure NEXT_PUBLIC_FIREBASE_* environment variables are set at build time."
+    "Firebase client config is incomplete. Set NEXT_PUBLIC_FIREBASE_API_KEY, AUTH_DOMAIN, PROJECT_ID, and APP_ID in Vercel envs and redeploy."
   )
 }
 
@@ -50,7 +49,7 @@ if (isBrowser && !hasClientFirebaseConfig) {
  */
 // Only enable analytics if a measurementId exists and the environment supports it.
 let analytics: ReturnType<typeof getAnalytics> | undefined = undefined
-if (isBrowser) {
+if (isBrowser && app) {
   try {
     const cfg = getFirebasePublic(false)
     if (cfg.measurementId) {

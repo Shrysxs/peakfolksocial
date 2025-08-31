@@ -4,7 +4,7 @@ import * as React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { onAuthStateChanged, type User as FirebaseUser, type ConfirmationResult } from "firebase/auth"
 import { doc, getDoc } from "firebase/firestore"
-import { auth, db } from "@/lib/firebase"
+import { auth, db, isFirebaseReady } from "@/lib/firebase"
 import { toast } from "sonner"
 import {
   loginUser,
@@ -74,6 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true)
     try {
+      if (!isFirebaseReady) {
+        toast.error("Login is temporarily unavailable. Firebase is not configured. Please check deployment env vars.")
+        return
+      }
       await loginUser(email, password)
       toast.success("Logged in successfully!")
     } catch (error: any) {
@@ -87,6 +91,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (email: string, password: string, username: string) => {
     setLoading(true)
     try {
+      if (!isFirebaseReady) {
+        toast.error("Registration is temporarily unavailable. Firebase is not configured.")
+        return
+      }
       await registerUser(email, password, username)
       toast.success("Account created successfully!")
     } catch (error: any) {
@@ -113,6 +121,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const googleSignIn = async () => {
     setLoading(true)
     try {
+      if (!isFirebaseReady) {
+        toast.error("Google sign-in is unavailable. Firebase is not configured.")
+        return
+      }
       await signInWithGoogle()
       toast.success("Signed in with Google!")
     } catch (error: any) {
@@ -126,6 +138,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const phoneSignIn = async (phoneNumber: string) => {
     setLoading(true)
     try {
+      if (!isFirebaseReady) {
+        toast.warning("Phone sign-in is unavailable. Firebase is not configured.")
+        return null
+      }
       const result = await signInWithPhone(phoneNumber)
       if (!result) {
         toast.warning("Phone sign-in is currently unavailable. Please use email or Google login.")
@@ -144,6 +160,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const phoneCodeConfirm = async (confirmationResult: ConfirmationResult, code: string) => {
     setLoading(true)
     try {
+      if (!isFirebaseReady) {
+        toast.error("OTP confirmation unavailable. Firebase is not configured.")
+        return
+      }
       await confirmPhoneCode(confirmationResult, code)
       toast.success("Phone number verified!")
     } catch (error: any) {
@@ -157,6 +177,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetPassword = async (email: string) => {
     setLoading(true)
     try {
+      if (!isFirebaseReady) {
+        toast.error("Password reset unavailable. Firebase is not configured.")
+        return
+      }
       await import("@/lib/firebase-services").then(({ sendPasswordResetEmail }) => sendPasswordResetEmail(email))
       toast.success("Password reset email sent! Check your inbox.")
     } catch (error: any) {
@@ -170,6 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshDbUser = async () => {
     if (!currentUser) return
     try {
+      if (!db) return
       const userDocRef = doc(db, "users", currentUser.uid)
       const userDocSnap = await getDoc(userDocRef)
       if (userDocSnap.exists()) {
@@ -183,6 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateDbUser = async (updates: Partial<DBUser>) => {
     if (!currentUser || !dbUser) return
     try {
+      if (!db) throw new Error("Firestore not initialized")
       await import("@/lib/firebase-services").then(({ updateUserProfile }) => 
         updateUserProfile(currentUser.uid, updates)
       )
