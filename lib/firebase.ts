@@ -5,8 +5,7 @@ import { getStorage } from "firebase/storage"
 import { getAnalytics } from "firebase/analytics"
 import { getFirebasePublic } from "@/lib/env"
 
-// Build a non-strict config at module load to avoid throwing on the server.
-// Strict validation happens only when actually initializing in the browser.
+// Build a non-strict config at module load to avoid throwing on server or client import.
 const firebaseConfig = getFirebasePublic(false)
 
 /* -------------------------------------------------------------------------- */
@@ -16,11 +15,34 @@ const firebaseConfig = getFirebasePublic(false)
 
 /* ---------------------------- Initialize SDKs ---------------------------- */
 const isBrowser = typeof window !== "undefined"
-// Only initialize in the browser with strict env validation.
-const app = isBrowser ? (getApps().length ? getApp() : initializeApp(getFirebasePublic(true))) : (undefined as unknown as ReturnType<typeof initializeApp>)
-const auth = isBrowser ? getAuth(app) : (undefined as unknown as ReturnType<typeof getAuth>)
-const db = isBrowser ? getFirestore(app) : (undefined as unknown as ReturnType<typeof getFirestore>)
-const storage = isBrowser ? getStorage(app) : (undefined as unknown as ReturnType<typeof getStorage>)
+
+// Validate required client keys before attempting init to avoid hard throws
+const hasClientFirebaseConfig = Boolean(
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.storageBucket &&
+  firebaseConfig.messagingSenderId &&
+  firebaseConfig.appId
+)
+
+const app = isBrowser && hasClientFirebaseConfig
+  ? (getApps().length ? getApp() : initializeApp(firebaseConfig))
+  : (undefined as unknown as ReturnType<typeof initializeApp>)
+
+const auth = isBrowser && app ? getAuth(app) : (undefined as unknown as ReturnType<typeof getAuth>)
+const db = isBrowser && app ? getFirestore(app) : (undefined as unknown as ReturnType<typeof getFirestore>)
+const storage = isBrowser && app ? getStorage(app) : (undefined as unknown as ReturnType<typeof getStorage>)
+
+if (isBrowser && !hasClientFirebaseConfig) {
+  // Surface a clear console error in production without crashing the UI
+  // Missing NEXT_PUBLIC_FIREBASE_* envs at build time – verify Vercel envs and redeploy.
+  // This log replaces a hard throw from requireEnv so the app remains usable enough to render login pages.
+  // eslint-disable-next-line no-console
+  console.error(
+    "Firebase client config is incomplete. Ensure NEXT_PUBLIC_FIREBASE_* environment variables are set at build time."
+  )
+}
 
 /**
  * Initialize Analytics **only** in the browser.
@@ -53,4 +75,5 @@ export {
   analytics,
   googleProvider,
   serverTimestamp, // convenient re-export
+  hasClientFirebaseConfig as isFirebaseReady,
 }

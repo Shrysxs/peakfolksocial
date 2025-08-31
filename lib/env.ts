@@ -19,6 +19,17 @@ function getEnv(name: string): string | undefined {
 function requireEnv(name: RequiredPublicVar): string {
   const v = getEnv(name)
   if (!v) {
+    // If we're in the browser, never hard-throw. This avoids breaking the entire app
+    // when client bundles were built without inlined NEXT_PUBLIC_* variables.
+    if (typeof window !== "undefined") {
+      // eslint-disable-next-line no-console
+      console.error(
+        `Missing required environment variable: ${name}. Ensure it is set in Vercel Project Settings for this environment.`,
+      )
+      return ""
+    }
+
+    // On the server (build-time or runtime), throwing is acceptable to fail fast.
     throw new Error(
       `Missing required environment variable: ${name}.\n` +
         "Set it in your .env.local for local dev, and in Vercel Project Settings → Environment Variables for deployments.",

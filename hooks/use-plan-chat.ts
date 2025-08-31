@@ -36,6 +36,7 @@ export function usePlanChat(planId: string) {
   // Real-time subscription to new messages
   useEffect(() => {
     if (!planId) return
+    if (!db) return
 
     const messagesQuery = query(
       collection(db, "planMessages"),
