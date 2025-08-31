@@ -1,3 +1,5 @@
+declare const jest: any
+
 export const adminAuth = {
   verifyIdToken: jest.fn().mockResolvedValue({ uid: 'test-user' }),
 }
@@ -27,4 +29,13 @@ export const adminDb = {
     update: jest.fn(),
     set: jest.fn(),
   })),
+}
+
+// Provide the same named exports used by production code
+export function getAdminAuth() {
+  return adminAuth as any
+}
+
+export function getAdminDb() {
+  return adminDb as any
 }

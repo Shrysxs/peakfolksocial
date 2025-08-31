@@ -117,6 +117,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true)
     try {
       const result = await signInWithPhone(phoneNumber)
+      if (!result) {
+        toast.warning("Phone sign-in is currently unavailable. Please use email or Google login.")
+        return null
+      }
       toast.info("OTP sent to your phone!")
       return result
     } catch (error: any) {

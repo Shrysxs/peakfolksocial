@@ -28,6 +28,7 @@ import {
   signInWithPopup,
   RecaptchaVerifier,
   updateProfile as firebaseUpdateProfile,
+  type ConfirmationResult,
 } from "firebase/auth"
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
 import { logEvent } from "firebase/analytics"
@@ -311,27 +312,24 @@ export const signInWithGoogle = async () => {
   return user
 }
 
-export const signInWithPhone = async (phoneNumber: string) => {
-  // Phone authentication is not enabled in Firebase project
-  // To enable: Go to Firebase Console > Authentication > Sign-in method > Phone
-  throw new Error("Phone authentication is not enabled. Please enable it in Firebase Console.")
-  
-  // Uncomment below when phone auth is enabled:
+export const signInWithPhone = async (phoneNumber: string): Promise<ConfirmationResult | null> => {
+  // Phone authentication is currently disabled in this project configuration.
+  // Returning null allows the UI to handle this gracefully without throwing.
+  if (process.env.NODE_ENV !== "production") {
+    // eslint-disable-next-line no-console
+    console.warn("signInWithPhone called but phone auth is disabled. Returning null.")
+  }
+  return null
+
+  // To enable:
+  // 1) Enable Phone provider in Firebase Console.
+  // 2) Implement reCAPTCHA and signInWithPhoneNumber below, then return the ConfirmationResult.
   /*
   if (typeof window !== "undefined" && !window.recaptchaVerifier) {
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-      size: "invisible",
-      callback: (response: any) => {
-        // reCAPTCHA solved, allow signInWithPhoneNumber.
-      },
-      "expired-callback": () => {
-        // Response expired. Ask user to solve reCAPTCHA again.
-      },
-    })
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible" })
   }
-
   const appVerifier = window.recaptchaVerifier
-  const confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+  const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier)
   return confirmationResult
   */
 }

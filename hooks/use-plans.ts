@@ -22,9 +22,9 @@ interface PlansFilter {
 export function usePlans(filters?: PlansFilter) {
   return useInfiniteQuery({
     queryKey: ["plans", filters?.location, filters?.category],
-    queryFn: async ({ pageParam }) => getPlansService(10, filters, pageParam),
+    queryFn: async ({ pageParam }: { pageParam: any }) => getPlansService(10, filters, pageParam),
     initialPageParam: null,
-    getNextPageParam: (lastPage) => lastPage.lastVisible,
+    getNextPageParam: (lastPage: any) => lastPage.lastVisible,
     staleTime: 1000 * 60, // 1 minute
     gcTime: 1000 * 60 * 5, // 5 minutes
   })
@@ -34,9 +34,9 @@ export function usePlans(filters?: PlansFilter) {
 export function useJoinedPlans(userId: string) {
   return useInfiniteQuery({
     queryKey: ["joinedPlans", userId],
-    queryFn: async ({ pageParam }) => getJoinedPlansService(userId, pageParam),
+    queryFn: async ({ pageParam }: { pageParam: any }) => getJoinedPlansService(userId, pageParam),
     initialPageParam: null,
-    getNextPageParam: (lastPage) => lastPage.lastVisible,
+    getNextPageParam: (lastPage: any) => lastPage.lastVisible,
     enabled: !!userId,
     staleTime: 1000 * 60, // 1 minute
     gcTime: 1000 * 60 * 5, // 5 minutes
@@ -68,8 +68,18 @@ export function useJoinPlan() {
       const previousPlan = queryClient.getQueryData(["plans", planId])
       const previousJoinedPlans = queryClient.getQueryData(["joinedPlans", userId])
 
+      // Only optimistically add if plan is public (not private), not full, and user not already joined
+      let didOptimisticPlanUpdate = false
       queryClient.setQueryData(["plans", planId], (oldPlan: Plan | undefined) => {
         if (!oldPlan) return oldPlan
+        const alreadyJoined = oldPlan.participantIds?.includes(userId)
+        const isPrivate = (oldPlan as any).isPrivate ?? oldPlan.visibility === "private"
+        const isFull =
+          typeof oldPlan.maxParticipants === "number" &&
+          oldPlan.maxParticipants > 0 &&
+          (oldPlan.currentParticipants || 0) >= oldPlan.maxParticipants
+        if (isPrivate || isFull || alreadyJoined) return oldPlan
+        didOptimisticPlanUpdate = true
         return {
           ...oldPlan,
           participantIds: [...oldPlan.participantIds, userId],
@@ -77,33 +87,45 @@ export function useJoinPlan() {
         }
       })
 
-      // Optimistically add to joinedPlans infinite query
-      queryClient.setQueryData(["joinedPlans", userId], (oldData: any) => {
-        if (!oldData) return oldData
-        const planToJoin = queryClient.getQueryData(["plans", planId]) as Plan | undefined
-        if (!planToJoin) return oldData
-
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page: any, index: number) => {
-            // Add to the first page or a relevant page if structure allows
-            if (index === 0) {
-              return {
-                ...page,
-                plans: [planToJoin, ...page.plans.filter((p: Plan) => p.id !== planToJoin.id)],
+      // Optimistically add to joinedPlans infinite query only if we updated the plan
+      let didOptimisticJoinedPlansUpdate = false
+      if (didOptimisticPlanUpdate) {
+        queryClient.setQueryData(["joinedPlans", userId], (oldData: any) => {
+          if (!oldData) return oldData
+          const planToJoin = queryClient.getQueryData(["plans", planId]) as Plan | undefined
+          if (!planToJoin) return oldData
+          didOptimisticJoinedPlansUpdate = true
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any, index: number) => {
+              if (index === 0) {
+                return {
+                  ...page,
+                  plans: [planToJoin, ...page.plans.filter((p: Plan) => p.id !== planToJoin.id)],
+                }
               }
-            }
-            return page
-          }),
-        }
-      })
+              return page
+            }),
+          }
+        })
+      }
 
-      return { previousPlan, previousJoinedPlans }
+      return { previousPlan, previousJoinedPlans, didOptimisticPlanUpdate, didOptimisticJoinedPlansUpdate }
     },
-    onSuccess: () => {
-      toast.success("Successfully joined the plan!")
+    onSuccess: (data: { ok: true; joined: boolean; pending: boolean }) => {
+      if (data?.pending) {
+        toast.info("Join request sent. You'll be added when the organizer approves.")
+      } else if (data?.joined) {
+        toast.success("Successfully joined the plan!")
+      } else {
+        toast.message("Join attempt completed.")
+      }
     },
-    onError: (error, { planId, userId }, context) => {
+    onError: (
+      error: any,
+      { planId, userId }: { planId: string; userId: string },
+      context: { previousPlan?: any; previousJoinedPlans?: any } | undefined,
+    ) => {
       toast.error(`Failed to join plan: ${error.message}`)
       // Rollback on error
       if (context?.previousPlan) {
@@ -113,7 +135,11 @@ export function useJoinPlan() {
         queryClient.setQueryData(["joinedPlans", userId], context.previousJoinedPlans)
       }
     },
-    onSettled: (_, __, { planId, userId }) => {
+    onSettled: (
+      _data: any,
+      _error: any,
+      { planId, userId }: { planId: string; userId: string },
+    ) => {
       queryClient.invalidateQueries({ queryKey: ["plans", planId] })
       queryClient.invalidateQueries({ queryKey: ["joinedPlans", userId] })
       queryClient.invalidateQueries({ queryKey: ["notifications"] }) // For new plan join notification
@@ -182,9 +208,9 @@ export function useLeavePlan() {
 export function useCreatedPlans(userId: string) {
   return useInfiniteQuery({
     queryKey: ["createdPlans", userId],
-    queryFn: async ({ pageParam }) => getCreatedPlansService(userId, pageParam),
+    queryFn: async ({ pageParam }: { pageParam: any }) => getCreatedPlansService(userId, pageParam),
     initialPageParam: null,
-    getNextPageParam: (lastPage) => lastPage.lastVisible,
+    getNextPageParam: (lastPage: any) => lastPage.lastVisible,
     enabled: !!userId,
     staleTime: 1000 * 60, // 1 minute
     gcTime: 1000 * 60 * 5, // 5 minutes
@@ -195,9 +221,9 @@ export function useCreatedPlans(userId: string) {
 export function usePlanPosts(planId: string) {
   return useInfiniteQuery({
     queryKey: ["planPosts", planId],
-    queryFn: async ({ pageParam }) => getPlanPostsService(planId, pageParam),
+    queryFn: async ({ pageParam }: { pageParam: any }) => getPlanPostsService(planId, pageParam),
     initialPageParam: null,
-    getNextPageParam: (lastPage) => lastPage.lastVisible,
+    getNextPageParam: (lastPage: any) => lastPage.lastVisible,
     enabled: !!planId,
     staleTime: 1000 * 60, // 1 minute
     gcTime: 1000 * 60 * 5, // 5 minutes
