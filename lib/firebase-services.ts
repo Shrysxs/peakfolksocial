@@ -42,6 +42,17 @@ declare global {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Safeguards                                                                 */
+/* -------------------------------------------------------------------------- */
+
+const getSafeAuth = () => {
+  if (!auth) {
+    throw new Error("Firebase Auth is not initialized. Ensure NEXT_PUBLIC_FIREBASE_* env vars are set and the app has been redeployed.")
+  }
+  return auth
+}
+
 // Declare getUser function (used as a fallback when embedded data is missing)
 const getUser = async (userId: string): Promise<UserProfile | null> => {
   const userRef = doc(db, "users", userId)
@@ -239,7 +250,8 @@ const mapNotificationDoc = async (id: string, data: any): Promise<Notification> 
 // --- Auth Services ---
 
 export const registerUser = async (email: string, password: string, username: string) => {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+  const a = getSafeAuth()
+  const userCredential = await createUserWithEmailAndPassword(a, email, password)
   const user = userCredential.user
 
   // Create user profile in Firestore
@@ -269,18 +281,21 @@ export const registerUser = async (email: string, password: string, username: st
 }
 
 export const loginUser = async (email: string, password: string) => {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password)
+  const a = getSafeAuth()
+  const userCredential = await signInWithEmailAndPassword(a, email, password)
   if (analytics) logEvent(analytics, "login", { method: "email_password" })
   return userCredential.user
 }
 
 export const logoutUser = async () => {
-  await signOut(auth)
+  const a = getSafeAuth()
+  await signOut(a)
   if (analytics) logEvent(analytics, "logout")
 }
 
 export const signInWithGoogle = async () => {
-  const result = await signInWithPopup(auth, googleProvider)
+  const a = getSafeAuth()
+  const result = await signInWithPopup(a, googleProvider)
   const user = result.user
 
   // Check if user exists in Firestore, if not, create profile
@@ -368,7 +383,8 @@ export const confirmPhoneCode = async (confirmationResult: any, code: string) =>
 }
 
 export const sendPasswordResetEmail = async (email: string) => {
-  await firebaseSendPasswordResetEmail(auth, email)
+  const a = getSafeAuth()
+  await firebaseSendPasswordResetEmail(a, email)
   if (analytics) logEvent(analytics, "password_reset_request")
 }
 
