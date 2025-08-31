@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Suspense } from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -14,7 +15,24 @@ import { toast } from "sonner"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { useRouter, useSearchParams } from "next/navigation"
 
+// Avoid static prerendering of the login page in production builds
+export const dynamic = "force-dynamic"
+
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-black p-4">
+          <LoadingSpinner className="text-orange-500" size="lg" />
+        </div>
+      }
+    >
+      <LoginInner />
+    </Suspense>
+  )
+}
+
+function LoginInner() {
   const router = useRouter()
   const search = useSearchParams()
   const nextPath = search?.get("next") || "/feed"
