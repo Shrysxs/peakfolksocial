@@ -51,7 +51,7 @@ export default function DebugEnvVarsPage() {
     }
   }
 
-  const missingRequired = envVars.filter(env => env.required && getStatus(env.value, env.required) === 'missing')
+  const missingRequired = envVars.filter(env => env.required && getStatus(env.value || '', env.required) === 'missing')
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
@@ -93,7 +93,7 @@ export default function DebugEnvVarsPage() {
         <CardContent>
           <div className="space-y-4">
             {envVars.map((env) => {
-              const status = getStatus(env.value, env.required)
+              const status = getStatus(env.value || '', env.required)
               return (
                 <div key={env.key} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
