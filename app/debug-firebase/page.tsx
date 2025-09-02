@@ -32,7 +32,7 @@ export default function DebugFirebasePage() {
 
     // Check database
     try {
-      if (db && typeof db.collection === 'function') {
+      if (db && db.app) {
         setDbStatus('ready')
       } else {
         setDbStatus('failed')
