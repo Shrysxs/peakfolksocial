@@ -18,7 +18,7 @@ function getEnv(name: string): string | undefined {
 
 function requireEnv(name: RequiredPublicVar): string {
   const v = getEnv(name)
-  if (!v) {
+  if (!v || v.trim() === "") {
     // If we're in the browser, never hard-throw. This avoids breaking the entire app
     // when client bundles were built without inlined NEXT_PUBLIC_* variables.
     if (typeof window !== "undefined") {

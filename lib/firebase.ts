@@ -5,8 +5,8 @@ import { getStorage } from "firebase/storage"
 import { getAnalytics } from "firebase/analytics"
 import { getFirebasePublic } from "@/lib/env"
 
-// Build a non-strict config at module load to avoid throwing on server or client import.
-const firebaseConfig = getFirebasePublic(false)
+// Build a strict config in browser, non-strict on server to avoid SSR issues
+const firebaseConfig = getFirebasePublic(typeof window !== "undefined")
 
 /* -------------------------------------------------------------------------- */
 /*   Validate config early so deployments fail fast if something is missing   */
@@ -41,6 +41,13 @@ if (isBrowser && !hasClientFirebaseConfig) {
   console.error(
     "Firebase client config is incomplete. Set NEXT_PUBLIC_FIREBASE_API_KEY, AUTH_DOMAIN, PROJECT_ID, and APP_ID in Vercel envs and redeploy."
   )
+  // eslint-disable-next-line no-console
+  console.error("Current config values:", {
+    apiKey: firebaseConfig.apiKey ? "SET" : "MISSING",
+    authDomain: firebaseConfig.authDomain ? "SET" : "MISSING", 
+    projectId: firebaseConfig.projectId ? "SET" : "MISSING",
+    appId: firebaseConfig.appId ? "SET" : "MISSING"
+  })
 }
 
 /**
