@@ -61,7 +61,7 @@ export default function EnvTestPage() {
               {error}
             </pre>
             <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-              Make sure you're running this in a browser environment and the API route is accessible.
+              Make sure you&apos;re running this in a browser environment and the API route is accessible.
             </p>
           </CardContent>
         </Card>
