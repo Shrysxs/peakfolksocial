@@ -15,9 +15,37 @@ export default function DebugFirebasePage() {
   const [storageStatus, setStorageStatus] = useState<string>('checking')
 
   const checkFirebaseStatus = () => {
-    // Get config
-    const firebaseConfig = getFirebasePublic(true)
-    setConfig(firebaseConfig)
+    // Get config with both strict and non-strict modes
+    const firebaseConfigStrict = getFirebasePublic(true)
+    const firebaseConfigNonStrict = getFirebasePublic(false)
+    
+    // Log detailed config info for debugging
+    console.log('🔍 Firebase Config Debug:', {
+      strict: firebaseConfigStrict,
+      nonStrict: firebaseConfigNonStrict,
+      isFirebaseReady,
+      isBrowser: typeof window !== 'undefined',
+      hasAuth: !!auth,
+      hasDb: !!db,
+      hasStorage: !!storage
+    })
+    
+    setConfig({
+      ...firebaseConfigStrict,
+      _debug: {
+        isFirebaseReady,
+        isBrowser: typeof window !== 'undefined',
+        hasAuth: !!auth,
+        hasDb: !!db,
+        hasStorage: !!storage,
+        configCheck: {
+          apiKey: !!firebaseConfigStrict.apiKey,
+          authDomain: !!firebaseConfigStrict.authDomain,
+          projectId: !!firebaseConfigStrict.projectId,
+          appId: !!firebaseConfigStrict.appId
+        }
+      }
+    })
 
     // Check auth
     try {
@@ -27,6 +55,7 @@ export default function DebugFirebasePage() {
         setAuthStatus('failed')
       }
     } catch (e) {
+      console.error('Auth check error:', e)
       setAuthStatus('error')
     }
 
@@ -38,6 +67,7 @@ export default function DebugFirebasePage() {
         setDbStatus('failed')
       }
     } catch (e) {
+      console.error('DB check error:', e)
       setDbStatus('error')
     }
 
@@ -49,6 +79,7 @@ export default function DebugFirebasePage() {
         setStorageStatus('failed')
       }
     } catch (e) {
+      console.error('Storage check error:', e)
       setStorageStatus('error')
     }
   }
@@ -126,7 +157,7 @@ export default function DebugFirebasePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {config && Object.entries(config).map(([key, value]) => (
+              {config && Object.entries(config).filter(([key]) => !key.startsWith('_')).map(([key, value]) => (
                 <div key={key} className="flex items-center justify-between p-3 border rounded-lg">
                   <code className="text-sm font-mono">{key}</code>
                   <div className="flex items-center gap-2">
@@ -148,6 +179,63 @@ export default function DebugFirebasePage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Firebase Configuration Debug */}
+        {config?._debug && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Firebase Configuration Debug</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <span className="font-medium">isFirebaseReady</span>
+                  <Badge variant={config._debug.isFirebaseReady ? "default" : "destructive"}>
+                    {config._debug.isFirebaseReady ? "True" : "False"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <span className="font-medium">Is Browser</span>
+                  <Badge variant={config._debug.isBrowser ? "default" : "secondary"}>
+                    {config._debug.isBrowser ? "Yes" : "No"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <span className="font-medium">Auth Object Available</span>
+                  <Badge variant={config._debug.hasAuth ? "default" : "destructive"}>
+                    {config._debug.hasAuth ? "Yes" : "No"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <span className="font-medium">DB Object Available</span>
+                  <Badge variant={config._debug.hasDb ? "default" : "destructive"}>
+                    {config._debug.hasDb ? "Yes" : "No"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <span className="font-medium">Storage Object Available</span>
+                  <Badge variant={config._debug.hasStorage ? "default" : "destructive"}>
+                    {config._debug.hasStorage ? "Yes" : "No"}
+                  </Badge>
+                </div>
+                
+                <div className="mt-4">
+                  <h4 className="font-medium mb-2">Required Config Check:</h4>
+                  <div className="space-y-2">
+                    {Object.entries(config._debug.configCheck).map(([key, hasValue]) => (
+                      <div key={key} className="flex items-center justify-between p-2 border rounded">
+                        <code className="text-sm">{key}</code>
+                        <Badge variant={hasValue ? "default" : "destructive"}>
+                          {hasValue ? "✓" : "✗"}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Service Status */}
         <Card>
