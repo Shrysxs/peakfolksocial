@@ -4,14 +4,12 @@ import { getFirestore, serverTimestamp } from "firebase/firestore"
 import { getStorage } from "firebase/storage"
 import { getAnalytics } from "firebase/analytics"
 import { getFirebasePublic } from "@/lib/env"
-import { getRuntimeEnvConfigSync, isFirebaseConfigComplete, debugEnvState } from "@/lib/runtime-env"
 
-// Try multiple config sources
+// Get Firebase config with fallback to injected config
 let firebaseConfig = getFirebasePublic(typeof window !== "undefined")
 
-// If we're in the browser and config is incomplete, try fallback sources
+// If we're in the browser and config is incomplete, try injected config
 if (typeof window !== "undefined") {
-  // Check if the original config is incomplete
   const isOriginalComplete = !!(
     firebaseConfig.apiKey &&
     firebaseConfig.authDomain &&
@@ -20,33 +18,11 @@ if (typeof window !== "undefined") {
   )
 
   if (!isOriginalComplete) {
-    console.warn('🔥 Original Firebase config incomplete, trying fallback sources...')
-    
-    // Try injected config from window
     const injectedConfig = (window as any).__FIREBASE_CONFIG__
     if (injectedConfig && injectedConfig.apiKey) {
-      console.log('✅ Using injected Firebase config from window.__FIREBASE_CONFIG__')
       firebaseConfig = injectedConfig
-    } else {
-      // Try runtime config as last resort
-      const runtimeConfig = getRuntimeEnvConfigSync()
-      if (isFirebaseConfigComplete(runtimeConfig)) {
-        console.log('✅ Using runtime Firebase config')
-        firebaseConfig = {
-          apiKey: runtimeConfig.NEXT_PUBLIC_FIREBASE_API_KEY,
-          authDomain: runtimeConfig.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-          projectId: runtimeConfig.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-          storageBucket: runtimeConfig.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-          messagingSenderId: runtimeConfig.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-          appId: runtimeConfig.NEXT_PUBLIC_FIREBASE_APP_ID,
-          measurementId: runtimeConfig.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-        }
-      }
     }
   }
-  
-  // Debug the environment state
-  debugEnvState()
 }
 
 /* -------------------------------------------------------------------------- */
