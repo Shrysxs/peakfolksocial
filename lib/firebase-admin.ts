@@ -1,6 +1,7 @@
 import { initializeApp, getApps, cert, App } from "firebase-admin/app"
 import { getAuth } from "firebase-admin/auth"
 import { getFirestore, FieldValue as AdminFieldValue } from "firebase-admin/firestore"
+import { FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, FIREBASE_ADMIN_PRIVATE_KEY } from "@/lib/env"
 
 // Lazy initialization to prevent build-time crashes
 let adminApp: App | null = null
@@ -9,9 +10,9 @@ function initAdmin(): App {
   const existing = getApps()[0]
   if (existing) return existing
 
-  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID
-  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
-  let privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY
+  const projectId = FIREBASE_ADMIN_PROJECT_ID
+  const clientEmail = FIREBASE_ADMIN_CLIENT_EMAIL
+  let privateKey = FIREBASE_ADMIN_PRIVATE_KEY
 
   if (privateKey && privateKey.includes("\\n")) {
     privateKey = privateKey.replace(/\\n/g, "\n")
@@ -19,7 +20,7 @@ function initAdmin(): App {
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error(
-      "[Firebase Admin] Missing service account credentials. Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, FIREBASE_ADMIN_PRIVATE_KEY in the environment.",
+      "[Firebase Admin] Missing service account credentials. Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, FIREBASE_ADMIN_PRIVATE_KEY in Vercel environment variables.",
     )
   }
 

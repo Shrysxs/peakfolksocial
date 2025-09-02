@@ -39,15 +39,17 @@ if (isBrowser && !hasClientFirebaseConfig) {
   // This log replaces a hard throw from requireEnv so the app remains usable enough to render login pages.
   // eslint-disable-next-line no-console
   console.error(
-    "Firebase client config is incomplete. Set NEXT_PUBLIC_FIREBASE_API_KEY, AUTH_DOMAIN, PROJECT_ID, and APP_ID in Vercel envs and redeploy."
+    "🔥 Firebase client config is incomplete. Authentication and database features will not work."
   )
   // eslint-disable-next-line no-console
-  console.error("Current config values:", {
-    apiKey: firebaseConfig.apiKey ? "SET" : "MISSING",
-    authDomain: firebaseConfig.authDomain ? "SET" : "MISSING", 
-    projectId: firebaseConfig.projectId ? "SET" : "MISSING",
-    appId: firebaseConfig.appId ? "SET" : "MISSING"
+  console.error("📋 Current config status:", {
+    apiKey: firebaseConfig.apiKey ? `SET (${firebaseConfig.apiKey.substring(0, 10)}...)` : "❌ MISSING",
+    authDomain: firebaseConfig.authDomain ? `SET (${firebaseConfig.authDomain})` : "❌ MISSING", 
+    projectId: firebaseConfig.projectId ? `SET (${firebaseConfig.projectId})` : "❌ MISSING",
+    appId: firebaseConfig.appId ? `SET (${firebaseConfig.appId.substring(0, 15)}...)` : "❌ MISSING"
   })
+  // eslint-disable-next-line no-console
+  console.error("🔧 Fix: Add missing variables in Vercel Project Settings → Environment Variables")
 }
 
 /**

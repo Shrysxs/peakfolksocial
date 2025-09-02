@@ -60,6 +60,11 @@ export function getFirebasePublic(strict = false) {
 export const NEXTAUTH_URL = getEnv("NEXTAUTH_URL")
 export const NEXTAUTH_SECRET = getEnv("NEXTAUTH_SECRET")
 
+// Firebase Admin (server-only)
+export const FIREBASE_ADMIN_PROJECT_ID = getEnv("FIREBASE_ADMIN_PROJECT_ID")
+export const FIREBASE_ADMIN_CLIENT_EMAIL = getEnv("FIREBASE_ADMIN_CLIENT_EMAIL")
+export const FIREBASE_ADMIN_PRIVATE_KEY = getEnv("FIREBASE_ADMIN_PRIVATE_KEY")
+
 // Feature flags (public)
 function toBool(v: string | undefined, def = false) {
   if (v === undefined) return def
