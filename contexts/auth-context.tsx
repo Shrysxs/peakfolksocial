@@ -21,7 +21,7 @@ interface AuthContextType {
   dbUser: DBUser | null
   loading: boolean
   isLoading: boolean // Alias for loading
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string, onSuccess?: () => void) => Promise<void>
   register: (email: string, password: string, username: string) => Promise<void>
   logout: () => Promise<void>
   signInWithGoogle: () => Promise<void>
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe
   }, [])
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, onSuccess?: () => void) => {
     setLoading(true)
     try {
       if (!isFirebaseReady) {
@@ -80,6 +80,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       await loginUser(email, password)
       toast.success("Logged in successfully!")
+      if (onSuccess) {
+        onSuccess()
+      }
     } catch (error: any) {
       toast.error(`Login failed: ${error.message}`)
       throw error

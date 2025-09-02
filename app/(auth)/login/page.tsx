@@ -48,8 +48,10 @@ function LoginInner() {
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await login(email, password)
-      router.push(nextPath)
+      await login(email, password, () => {
+        router.push(nextPath)
+        router.refresh() // Ensure the page updates with the new auth state
+      })
     } catch (error) {
       // Error handled by useAuth hook
     }
