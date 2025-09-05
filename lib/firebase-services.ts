@@ -643,6 +643,18 @@ export const getPosts = async (lastVisible?: any, limitCount = 10): Promise<{ po
   return { posts, lastVisible: newLastVisible }
 }
 
+// Real-time version for feed posts
+export const getPostsRealtime = (callback: (posts: Post[]) => void, limitCount = 20) => {
+  const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(limitCount))
+  
+  const unsubscribe = onSnapshot(postsQuery, (snapshot: any) => {
+    const posts = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }) as Post)
+    callback(posts)
+  })
+  
+  return unsubscribe
+}
+
 export const getUserPosts = async (
   userId: string,
   lastVisible?: any,
@@ -944,6 +956,34 @@ export const getPlans = async (
   const newLastVisible = documentSnapshots.docs[documentSnapshots.docs.length - 1]
 
   return { plans, lastVisible: newLastVisible }
+}
+
+// Real-time version for plans
+export const getPlansRealtime = (
+  callback: (plans: Plan[]) => void, 
+  limitCount = 20,
+  filters?: { location?: string; category?: string }
+) => {
+  let plansQuery: any = collection(db, "plans")
+
+  if (filters?.location && filters.location !== "All Locations") {
+    plansQuery = query(plansQuery, where("location", "==", filters.location))
+  }
+  if (filters?.category && filters.category !== "All Categories") {
+    plansQuery = query(plansQuery, where("category", "==", filters.category))
+  }
+
+  plansQuery = query(plansQuery, orderBy("createdAt", "desc"), limit(limitCount))
+  
+  const unsubscribe = onSnapshot(plansQuery, (snapshot: any) => {
+    const plans = snapshot.docs.map((doc: any) => {
+      const data = doc.data() || {}
+      return { id: doc.id, ...data } as Plan
+    })
+    callback(plans)
+  })
+  
+  return unsubscribe
 }
 
 export const getJoinedPlans = async (
@@ -1332,19 +1372,36 @@ export const getConversationList = (userId: string, callback: (conversations: Me
 
   const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
     const conversationsMap = new Map<string, Message>()
+    const unreadCountMap = new Map<string, number>()
+    
     snapshot.docs.forEach((doc) => {
       const message = { id: doc.id, ...doc.data() } as Message
       const otherUserId = message.senderId === userId ? message.receiverId : message.senderId
       const conversationKey = [userId, otherUserId].sort().join("_")
+
+      // Count unread messages for this conversation
+      if (message.receiverId === userId && !message.isRead) {
+        unreadCountMap.set(conversationKey, (unreadCountMap.get(conversationKey) || 0) + 1)
+      }
 
       // Only keep the latest message for each conversation
       if (
         !conversationsMap.has(conversationKey) ||
         message.createdAt > conversationsMap.get(conversationKey)!.createdAt
       ) {
-        conversationsMap.set(conversationKey, message)
+        const messageWithUnreadCount = {
+          ...message,
+          unreadCount: unreadCountMap.get(conversationKey) || 0
+        }
+        conversationsMap.set(conversationKey, messageWithUnreadCount)
       }
     })
+    
+    // Update unread counts for existing conversations
+    conversationsMap.forEach((message, key) => {
+      message.unreadCount = unreadCountMap.get(key) || 0
+    })
+    
     callback(Array.from(conversationsMap.values()).sort((a, b) => {
       const aTime = toDate(a.createdAt)?.getTime() || 0
       const bTime = toDate(b.createdAt)?.getTime() || 0

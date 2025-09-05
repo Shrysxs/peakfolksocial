@@ -3,9 +3,11 @@ import { Home, Compass, PlusSquare, Bell, User } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useUnreadCounts } from "@/hooks/use-unread-counts"
 
 export function MobileNavigation() {
   const pathname = usePathname()
+  const { unreadNotifications, unreadMessages } = useUnreadCounts()
 
   const navItems = [
     { href: "/feed", icon: Home, label: "Feed" },
@@ -61,12 +63,16 @@ export function MobileNavigation() {
                     ? "animate-glow-pulse"
                     : ""
                 )} />
-                {/* Badge placeholders */}
-                {item.href === "/notifications" && (
-                  <span className="absolute -top-1 -right-2 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold border-2 border-black">5</span>
+                {/* Real-time badge counts */}
+                {item.href === "/notifications" && unreadNotifications > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold border-2 border-black">
+                    {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                  </span>
                 )}
-                {item.href === "/messages" && (
-                  <span className="absolute -top-1 -right-2 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold border-2 border-black">3</span>
+                {item.href === "/messages" && unreadMessages > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold border-2 border-black">
+                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                  </span>
                 )}
               </div>
               <span className="text-xs mt-1 font-medium">{item.label}</span>

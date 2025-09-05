@@ -177,6 +177,7 @@ export interface Message {
   read: boolean // For backward compatibility
   text?: string // Redundant with content, keeping for compatibility
   author?: EmbeddedUser // Author's user details for display
+  unreadCount?: number // Count of unread messages in this conversation
 }
 
 export interface Story {
